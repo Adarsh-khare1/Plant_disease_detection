@@ -49,7 +49,7 @@ Do not store plaintext passwords.
 
 This is the main PlantDx record.
 
-Each completed or attempted analysis may create one analysis record.
+Each completed or attempted analysis creates one analysis record. Intermediate stage predictions are recorded to maintain full auditability across the 4-model pipeline.
 
 Example:
 
@@ -61,7 +61,7 @@ Example:
 
   "image": {
     "filename": "tomato-leaf.jpg",
-    "storage_key": "images/...",
+    "storage_key": "images/user123/img_01ha48v9p2kxq.jpg",
     "mime_type": "image/jpeg",
     "size_bytes": 2457600,
     "width": 1920,
@@ -91,27 +91,31 @@ Example:
   },
 
   "leaf_check": {
-    "status": "leaf",
-    "confidence": null
+    "label": "leaf",
+    "score": 0.991,
+    "model_version": "model1-v1.0"
   },
 
   "crop_check": {
-    "status": "supported",
-    "crop": "tomato",
-    "confidence": null
+    "label": "tomato",
+    "score": 0.963,
+    "model_version": "model2-v1.0"
   },
 
   "prediction": {
-    "class_id": "MODEL_CLASS_ID",
-    "class_name": "MODEL_CLASS_NAME",
-    "confidence": 0.88
+    "crop": "tomato",
+    "class_id": "early_blight",
+    "display_name": "Early Blight",
+    "score": 0.912,
+    "model_version": "model4-v1.0"
   },
 
   "pipeline": {
-    "leaf_model_version": null,
-    "crop_model_version": null,
-    "disease_model_version": null,
-    "preprocessing_version": null
+    "leaf_model_version": "model1-v1.0",
+    "crop_model_version": "model2-v1.0",
+    "disease_model_version": "model4-v1.0",
+    "preprocessing_version": "dsp-v1.0",
+    "normalization_metadata": "metadata/model1_normalization.json"
   },
 
   "created_at": "datetime",
@@ -120,88 +124,179 @@ Example:
 
 ---
 
-# Analysis status values
+# Analysis Status Values
 
 Possible top-level status values:
 
-- quality_failed
-- not_leaf
-- unsupported_crop
-- healthy
-- disease_detected
-- analysis_failed
+- `quality_failed`: The uploaded photograph failed one or more product quality checks (such as resolution, sharpness/blur, exposure/lighting, or contrast).
+- `not_leaf`: Model 1 classified the input as `non_leaf`.
+- `unsupported_crop`: Model 2 classified the crop as `other`.
+- `healthy`: The supported crop image most closely matched the healthy class among the conditions supported by the current disease model.
+- `disease_detected`: The disease model predicted one of the currently supported disease classes (Early Blight or Late Blight).
+- `analysis_failed`: Unhandled runtime, decoding, or execution failure.
 
-These values should be consistent with the API contract.
+These values remain invariant and aligned with API and frontend constants.
+
+> [!NOTE]
+> PlantDx is an automated image classification system, not a biological or laboratory confirmation.
 
 ---
 
-# Analysis examples
+# Analysis Examples by Stage
 
 ## Quality Failed
+Downstream DSP and ML models are not executed.
 
+```json
 {
   "status": "quality_failed",
   "quality": {
-    "status": "needs_improvement"
+    "status": "needs_improvement",
+    "checks": {
+      "sharpness": { "status": "needs_improvement", "reason": "blur_detected" }
+    }
   },
   "leaf_check": null,
   "crop_check": null,
   "prediction": null
 }
-
-Downstream models are not executed.
+```
 
 ---
 
 ## Not Leaf
+Model 1 determined the image is `non_leaf`. Crop and disease models are not executed.
 
+```json
 {
   "status": "not_leaf",
-  "quality": {
-    "status": "passed"
-  },
+  "quality": { "status": "passed" },
   "leaf_check": {
-    "status": "non_leaf"
+    "label": "non_leaf",
+    "score": 0.982,
+    "model_version": "model1-v1.0"
   },
   "crop_check": null,
   "prediction": null
 }
+```
 
 ---
 
 ## Unsupported Crop
+Model 1 verified `leaf`, but Model 2 classified the plant as `other`. Disease models are not executed.
 
+```json
 {
   "status": "unsupported_crop",
-  "quality": {
-    "status": "passed"
-  },
+  "quality": { "status": "passed" },
   "leaf_check": {
-    "status": "leaf"
+    "label": "leaf",
+    "score": 0.974,
+    "model_version": "model1-v1.0"
   },
   "crop_check": {
-    "status": "unsupported",
-    "crop": "other"
+    "label": "other",
+    "score": 0.891,
+    "model_version": "model2-v1.0"
   },
   "prediction": null
 }
+```
 
 ---
 
 ## Healthy
+Model 2 identified `potato` or `tomato`, and the respective disease model diagnosed `healthy`.
 
+```json
 {
   "status": "healthy",
+  "leaf_check": {
+    "label": "leaf",
+    "score": 0.991,
+    "model_version": "model1-v1.0"
+  },
   "crop_check": {
-    "status": "supported",
-    "crop": "tomato"
+    "label": "tomato",
+    "score": 0.963,
+    "model_version": "model2-v1.0"
   },
   "prediction": {
-    "class_id": "tomato_healthy",
-    "class_name": "Healthy",
-    "confidence": 0.94
+    "crop": "tomato",
+    "class_id": "healthy",
+    "display_name": "Healthy Leaf",
+    "score": 0.948,
+    "model_version": "model4-v1.0"
   }
 }
+```
+
+---
+
+## Disease Detected
+Model 2 identified `potato` or `tomato`, and the disease model diagnosed `early_blight` or `late_blight`.
+
+```json
+{
+  "status": "disease_detected",
+  "leaf_check": {
+    "label": "leaf",
+    "score": 0.991,
+    "model_version": "model1-v1.0"
+  },
+  "crop_check": {
+    "label": "potato",
+    "score": 0.978,
+    "model_version": "model2-v1.0"
+  },
+  "prediction": {
+    "crop": "potato",
+    "class_id": "late_blight",
+    "display_name": "Late Blight",
+    "score": 0.935,
+    "model_version": "model3-v1.0"
+  }
+}
+```
+
+---
+
+# Current Disease Scope
+
+The current supported disease class IDs are:
+- `healthy`
+- `early_blight`
+- `late_blight`
+
+The class mapping may be versioned or expanded if future trained models support additional conditions.
+
+Under this current scope, the supported crop and disease combinations are:
+1. `potato` — `healthy`
+2. `potato` — `early_blight`
+3. `potato` — `late_blight`
+4. `tomato` — `healthy`
+5. `tomato` — `early_blight`
+6. `tomato` — `late_blight`
+
+Latin scientific names do not form part of the ML class identity; they may later live in `disease_reference` educational content after being deliberately sourced and reviewed.
+
+---
+
+# Score Terminology & Calibration Caveat
+
+All model outputs in `leaf_check.score`, `crop_check.score`, and `prediction.score` are scalar floats.
+> [!NOTE]
+> Deep learning Softmax outputs are uncalibrated activation scores, not Bayesian probabilities. MongoDB stores these raw scores for logging, auditing, and thresholding; the UI renders them as confidence scores.
+
+---
+
+# DSP Derived Artifact & Storage Rules
+
+1. **No Tensors in Database**: Inference tensors, OpenCV NumPy matrices, intermediate feature maps, and raw pixel buffers are **never** stored in MongoDB.
+2. **Ephemeral Intermediates**: Transient DSP intermediates during pipeline execution may remain purely ephemeral in-memory variables.
+3. **Derived Artifact Retention**: Derived DSP debug or explanation images may be saved to object storage later only when a product, demo, or explainability feature explicitly requires retention.
+4. **Database Records**: MongoDB stores only metadata and storage references (`storage_key`) for any retained derived artifact. Raw uploaded images remain stored in object storage.
 
 ---
 

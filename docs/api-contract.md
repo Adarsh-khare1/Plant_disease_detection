@@ -21,16 +21,17 @@ The frontend must never communicate directly with individual ML models.
 Client
 
 → upload
-→ quality check
-→ analysis
+→ optional quality check
+→ analysis request
 
 FastAPI
 
 → image validation
-→ DSP quality assessment
-→ leaf validation
-→ crop classification
-→ crop-specific disease classification
+→ optional product image quality assessment (resolution, sharpness, lighting, contrast)
+→ deterministic DSP preprocessing (HSV -> Saturation -> Otsu segmentation -> masking -> 224×224 resize -> normalization)
+→ Model 1: Leaf validation (`leaf` vs `non_leaf`)
+→ Model 2: Crop classification (`potato`, `tomato`, `other`)
+→ Model 3 / Model 4: Crop-specific disease classification (`healthy`, `early_blight`, `late_blight`)
 → structured response
 
 ---
@@ -39,16 +40,17 @@ FastAPI
 
 Possible analysis outcomes:
 
-- quality_failed
-- not_leaf
-- unsupported_crop
-- healthy
-- disease_detected
-- analysis_failed
+- `quality_failed`: The uploaded photograph failed one or more product quality checks (such as resolution, sharpness/blur, exposure/lighting, or contrast).
+- `not_leaf`: Model 1 detected non-leaf subject matter.
+- `unsupported_crop`: Model 2 detected a leaf, but it is not Potato or Tomato (`other`).
+- `healthy`: The supported crop image most closely matched the healthy class among the conditions supported by the current disease model.
+- `disease_detected`: The disease model predicted one of the currently supported disease classes (Early Blight or Late Blight).
+- `analysis_failed`: Pipeline execution, decoding, or runtime error.
 
-These values should remain machine-readable.
+These values remain machine-readable and invariant. The frontend converts status and reason codes into localized user-facing UX copy.
 
-The frontend is responsible for converting status/reason codes into user-facing messages.
+> [!NOTE]
+> PlantDx is an automated image classification system, not a biological or laboratory confirmation.
 
 ---
 
@@ -79,7 +81,7 @@ Maximum file size:
 ## Example Response
 
 {
-  "image_id": "generated-id",
+  "image_id": "img_01ha48v9p2kxq...",
   "filename": "tomato-leaf.jpg",
   "mime_type": "image/jpeg",
   "size_bytes": 2457600,
@@ -147,7 +149,7 @@ Possible reason codes may include:
 - overexposed
 - low_contrast
 
-Exact thresholds will be determined experimentally.
+Product image quality metrics and thresholds remain to be established from validation and field images.
 
 ---
 
@@ -157,76 +159,158 @@ Exact thresholds will be determined experimentally.
 
 POST /api/v1/analyses
 
+Invokes the backend `AnalysisService` and the internal `InferencePipeline`.
+
 ## Input
 
 {
-  "image_id": "generated-id"
+  "image_id": "img_01ha48v9p2kxq..."
 }
 
-The crop should normally be determined by the model pipeline.
+Crop routing is determined autonomously by Model 2. A client-provided crop hint may be provided for informational context but must never override Model 2 routing.
 
-A user-provided crop may later be included as optional context but must not silently override model routing.
+## Score / Confidence Terminology & Calibration Caveat
+
+All model outputs provide a `score` float between `0.0` and `1.0` (also referred to as `model score` or `confidence`).
+> [!NOTE]
+> Deep neural network Softmax outputs represent class activation confidence scores, **not** statistically calibrated real-world probabilities.
 
 ---
 
-# Not Leaf Response
+### Response: Not Leaf (`not_leaf`)
+Returned when Model 1 classifies the image as `non_leaf`. Pipeline terminates immediately; downstream crop and disease models are not invoked.
 
+```json
 {
   "status": "not_leaf",
-  "analysis_id": "generated-id"
+  "analysis_id": "anl_01ha4912x8zq...",
+  "leaf_check": {
+    "label": "non_leaf",
+    "score": 0.982,
+    "model_version": "model1-v1.0"
+  },
+  "crop_check": null,
+  "prediction": null
 }
-
-The pipeline stops.
-
-Crop and disease classifiers are not executed.
+```
 
 ---
 
-# Unsupported Crop Response
+### Response: Unsupported Crop (`unsupported_crop`)
+Returned when Model 1 confirms `leaf`, but Model 2 classifies the plant as `other` (neither `potato` nor `tomato`). Pipeline terminates; disease models are not invoked.
 
+```json
 {
   "status": "unsupported_crop",
-  "analysis_id": "generated-id",
-  "leaf_detected": true
+  "analysis_id": "anl_01ha4912x8zq...",
+  "leaf_check": {
+    "label": "leaf",
+    "score": 0.974,
+    "model_version": "model1-v1.0"
+  },
+  "crop_check": {
+    "label": "other",
+    "score": 0.891,
+    "model_version": "model2-v1.0"
+  },
+  "prediction": null
 }
-
-The pipeline stops.
-
-Disease classification is not executed.
+```
 
 ---
 
-# Healthy Response
+### Response: Healthy (`healthy`)
+Returned when Model 2 classifies the crop as `potato` or `tomato`, and the supported crop image most closely matched the healthy class among conditions supported by the current disease model.
 
+```json
 {
   "status": "healthy",
-  "analysis_id": "generated-id",
+  "analysis_id": "anl_01ha4912x8zq...",
   "crop": "tomato",
+  "leaf_check": {
+    "label": "leaf",
+    "score": 0.991,
+    "model_version": "model1-v1.0"
+  },
+  "crop_check": {
+    "label": "tomato",
+    "score": 0.963,
+    "model_version": "model2-v1.0"
+  },
   "prediction": {
-    "class_id": "tomato_healthy",
-    "class_name": "Healthy",
-    "confidence": 0.94
+    "crop": "tomato",
+    "class_id": "healthy",
+    "display_name": "Healthy Leaf",
+    "score": 0.948,
+    "model_version": "model4-v1.0"
   }
 }
+```
 
 ---
 
-# Disease Response
+### Response: Disease Detected (`disease_detected`)
+Returned when Model 2 identifies `potato` or `tomato`, and the respective disease model predicts one of the supported disease classes (`early_blight` or `late_blight`).
 
+```json
 {
   "status": "disease_detected",
-  "analysis_id": "generated-id",
+  "analysis_id": "anl_01ha4912x8zq...",
   "crop": "tomato",
+  "leaf_check": {
+    "label": "leaf",
+    "score": 0.991,
+    "model_version": "model1-v1.0"
+  },
+  "crop_check": {
+    "label": "tomato",
+    "score": 0.963,
+    "model_version": "model2-v1.0"
+  },
   "prediction": {
-    "class_id": "MODEL_CLASS_ID",
-    "class_name": "MODEL_CLASS_NAME",
-    "confidence": 0.88
+    "crop": "tomato",
+    "class_id": "early_blight",
+    "display_name": "Early Blight",
+    "score": 0.912,
+    "model_version": "model4-v1.0"
   }
 }
+```
 
-Disease class names must come from the finalized ML class mapping.
+---
 
-UI prototypes are not the source of truth for disease classes.
+### Current Supported Disease Scope
+The current supported disease class IDs are:
+- `healthy`
+- `early_blight`
+- `late_blight`
+
+The class mapping may be versioned or expanded if future trained models support additional conditions.
+
+Under this current scope, the supported crop and disease combinations for `prediction` are:
+1. `potato` — `healthy`
+2. `potato` — `early_blight`
+3. `potato` — `late_blight`
+4. `tomato` — `healthy`
+5. `tomato` — `early_blight`
+6. `tomato` — `late_blight`
+
+Latin scientific names do not form part of the ML class identity; they may later live in `disease_reference` educational content after being deliberately sourced and reviewed.
+
+---
+
+### Machine Labels vs. Display Names
+
+| Field | Invariant Machine Token (`class_id` / `label`) | User Display Name |
+|---|---|---|
+| `leaf_check.label` | `leaf` | Leaf Detected |
+| `leaf_check.label` | `non_leaf` | Not a Leaf |
+| `crop_check.label` | `potato` | Potato |
+| `crop_check.label` | `tomato` | Tomato |
+| `crop_check.label` | `other` | Unsupported Plant |
+| `prediction.class_id` | `healthy` | Healthy |
+| `prediction.class_id` | `early_blight` | Early Blight |
+| `prediction.class_id` | `late_blight` | Late Blight |
 
 ---
 

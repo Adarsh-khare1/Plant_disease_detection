@@ -195,69 +195,99 @@ Do not duplicate application navigation inside every page.
 
 # Analyze Flow
 
-The Analyze page should behave as a state-driven workflow.
+The Analyze page (`/app/analyze`) functions as a state-driven workflow:
 
-Possible frontend states:
+```text
+[Upload Zone]
+      │ (Image Selected)
+      ▼
+[Image Review & Quality Check] ──(Fails)──► [Quality Feedback / Actionable Guidance]
+      │ (Passed or Skipped)
+      ▼
+[Inference Progress State]
+      │
+      ▼
+[Diagnostic Result (/app/results/[id])]
+      ├──► Not a Leaf
+      ├──► Unsupported Plant
+      ├──► Healthy Leaf
+      └──► Disease Detected (Early Blight / Late Blight)
+```
 
-- empty
-- image_selected
-- quality_checking
-- quality_failed
-- quality_passed
-- analyzing
-- analysis_error
-- completed
+### Analysis Progress States & User-Facing Translations
+During the analysis phase, the UI displays clear, natural agricultural language. Never display internal model designations (e.g. "Model 1", "ResNet-9", "Model 3") or arbitrary timer-based fake percentage bars:
 
-Do not create separate URLs for every state.
-
-Use:
-
-/app/analyze
-
-for the workflow.
-
-After analysis completes, redirect to:
-
-/app/results/{analysis_id}
+| Internal Pipeline Stage | User-Facing Progress Label |
+|---|---|
+| Image decode & validation | *"Checking image..."* |
+| Model 1 (Leaf vs. Non-Leaf) | *"Identifying leaf..."* |
+| Model 2 (Crop Classification) | *"Identifying crop..."* |
+| Model 3 / 4 (Disease Classification) | *"Analyzing leaf..."* |
 
 ---
 
 # Analysis State Mapping
 
-Backend:
+The frontend maps backend status strings directly to dedicated result layouts:
 
-quality_failed
+- `quality_failed`: Displays quality warning banner with actionable photography tips when the upload fails one or more checks (resolution, sharpness/blur, exposure/lighting, contrast).
+- `not_leaf`: Displays "Not a Leaf" result card, advising the user to photograph single plant foliage.
+- `unsupported_crop`: Displays "Unsupported Crop" card, explaining current diagnostic coverage is focused on Potato and Tomato.
+- `healthy`: Displays "Healthy Foliage" result card when the image most closely matched the healthy class among conditions supported by the current disease model.
+- `disease_detected`: Displays "Disease Detected" card when the model predicted one of the supported disease classes (Early Blight or Late Blight), with condition badge, model confidence score, and management recommendations.
+- `analysis_failed`: Displays error banner with retry option.
 
-Frontend:
-quality_failed
+> [!NOTE]
+> PlantDx is an automated image classification system, not a biological or laboratory confirmation.
 
-Backend:
+---
 
-not_leaf
+# DSP Visualization vs. Diagnostic Result Boundary
 
-Frontend:
-result page with not-leaf result component
+A strict architectural separation governs where DSP intermediate stages appear:
 
-Backend:
+1. **Farmer-Facing Result Screen (`/app/results/[id]`)**:
+   - Focuses strictly on actionable agronomic outcomes: crop name, disease condition, model confidence score, and management recommendations.
+   - Does **not** overwhelm farmers with DSP binary masks or segmentation internals.
+   - Grad-CAM / SHAP heatmaps are **not implemented** in the ML subsystem and must never be mocked or faked with synthetic overlays.
+2. **Technology / Academic / Demo Screens (`/technology`)**:
+   - Intended for technical evaluators and researchers.
+   - Displays the 5-step visual DSP breakdown:
+     - 1. Original RGB Leaf
+     - 2. Saturation Channel (HSV)
+     - 3. Otsu Thresholding Mask
+     - 4. Morphological Cleaned Mask
+     - 5. Masked Foreground Leaf (Black Background)
 
-unsupported_crop
+---
 
-Frontend:
-result page with unsupported-crop component
+# Current Disease Scope
 
-Backend:
+The current supported disease class IDs are:
+- `healthy`
+- `early_blight`
+- `late_blight`
 
-healthy
+The class mapping may be versioned or expanded if future trained models support additional conditions.
 
-Frontend:
-result page with healthy-result component
+Under this current scope, the supported crop and disease combinations are:
+1. **Potato** — Healthy
+2. **Potato** — Early Blight
+3. **Potato** — Late Blight
+4. **Tomato** — Healthy
+5. **Tomato** — Early Blight
+6. **Tomato** — Late Blight
 
-Backend:
+UI prototypes are not the source of truth for disease classes. Latin scientific names do not form part of the ML class identity; they may later live in `disease_reference` educational content after being deliberately sourced and reviewed.
 
-disease_detected
+---
 
-Frontend:
-result page with disease-result component
+# Machine Labels vs. Display Names
+
+Components must always bind to invariant machine tokens and resolve human-readable labels from constants or reference APIs:
+
+- Machine tokens: `potato`, `tomato`, `other`, `leaf`, `non_leaf`, `healthy`, `early_blight`, `late_blight`
+- Score vocabulary: Always display as **"Confidence"**, **"Model Score"**, or **"Prediction Score"** (e.g. `94% Confidence`). Never label as a "calibrated probability" or "certainty percentage".
 
 ---
 

@@ -69,34 +69,58 @@ The system will be designed so that the machine-learning component can be improv
 * Explainability
 * Model deployment
 
-## Architecture
+## Hierarchical ML Architecture
+
+PlantDx employs a 4-model staged sequential pipeline to provide accurate diagnostics while failing fast on invalid inputs:
 
 ```text
-User
-  │
-  ▼
-Next.js Frontend
-  │
-  ▼
-FastAPI Backend
-  │
-  ├── MongoDB
-  │
-  └── Prediction Service
-          │
-          └── ML Model
+User Image
+    │
+    ▼
+Optional Product Quality Assessment (Resolution, Blur, Exposure, Contrast) ──[Needs Improvement]──► status = quality_failed
+    │
+    ▼ [Passed]
+Deterministic DSP Preprocessing Pipeline (HSV -> Otsu -> Morphological Mask -> 224x224)
+    │
+    ▼
+Model 1: Leaf vs. Non-Leaf Classifier  ──[non_leaf]──────────► status = not_leaf
+    │
+    ▼ [leaf]
+Model 2: Crop Classifier (Potato vs Tomato vs Other)  ──[other]──► status = unsupported_crop
+    │
+    ├───[potato]──► Model 3: Potato Disease Classifier ──► healthy | early_blight | late_blight
+    │
+    └───[tomato]──► Model 4: Tomato Disease Classifier ──► healthy | early_blight | late_blight
 ```
 
-During early development, the prediction service will use a mock prediction so that frontend and backend development can proceed before the final ML model is integrated.
+### Current Supported Disease Scope
+The current supported disease class IDs are:
+- `healthy`
+- `early_blight`
+- `late_blight`
 
-## Research Direction
+The class mapping may be versioned or expanded if future trained models support additional conditions.
 
-The ML stage will investigate whether image-quality assessment, image preprocessing, leaf segmentation, and DSP-based techniques can improve plant disease classification.
+Under this current scope, the supported crop and disease combinations are:
+1. **Potato** — Healthy
+2. **Potato** — Early Blight
+3. **Potato** — Late Blight
+4. **Tomato** — Healthy
+5. **Tomato** — Early Blight
+6. **Tomato** — Late Blight
 
-Model selection will be based on experiments rather than assuming a single architecture in advance.
+*(PlantDx is an automated image classification system, not a biological or laboratory confirmation. Latin scientific names do not form part of the ML class identity.)*
 
-## Status
+### Deterministic DSP Segmentation
+Before inference, leaf images undergo an automated digital signal processing pipeline:
+- RGB to HSV color conversion and Saturation (S) channel extraction
+- Otsu thresholding with morphological opening and closing to isolate the primary leaf
+- Foreground mask application over black background and center-crop to 224×224 pixels
+- Model-specific channel normalization (`metadata/model1_normalization.json` produced by Model 1 training; production code decouples from absolute development paths and never substitutes generic ImageNet values)
 
-Project initialization.
-
-ML integration is intentionally deferred until the frontend and backend foundations are complete.
+### Staged ML Integration & Current Status
+- **Current Status**:
+  - **Model 1**: Dataset and DSP segmentation pipeline substantially prepared; ResNet-9 architecture validation in progress; full training pending.
+  - **Models 2, 3, and 4**: Architectures defined; training not yet started.
+  - **Explainability (Grad-CAM/SHAP)** & **Edge Quantization**: Not yet implemented.
+- **Integration Strategy**: During frontend and backend development, FastAPI orchestrates mock implementations adhering strictly to this 4-model contract, allowing full end-to-end UX validation prior to loading final PyTorch weights.

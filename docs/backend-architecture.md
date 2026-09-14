@@ -87,11 +87,21 @@ backend/
 │   │
 │   ├── ml/
 │   │   ├── interfaces.py
-│   │   ├── mock_leaf_classifier.py
-│   │   ├── mock_crop_classifier.py
-│   │   ├── mock_tomato_classifier.py
-│   │   ├── mock_potato_classifier.py
-│   │   └── pipeline.py
+│   │   ├── registry.py
+│   │   ├── dsp_preprocessor.py
+│   │   ├── pipeline.py
+│   │   ├── mock/
+│   │   │   ├── leaf_classifier.py
+│   │   │   ├── crop_classifier.py
+│   │   │   ├── tomato_classifier.py
+│   │   │   └── potato_classifier.py
+│   │   ├── models/
+│   │   │   ├── model1_leaf.py
+│   │   │   ├── model2_crop.py
+│   │   │   ├── model3_potato.py
+│   │   │   └── model4_tomato.py
+│   │   └── metadata/
+│   │       └── model1_normalization.json
 │   │
 │   ├── db/
 │   │   ├── client.py
@@ -162,13 +172,17 @@ QualityService
 - return machine-readable reasons
 
 AnalysisService
-- orchestrate the full analysis pipeline
-- stop the pipeline at appropriate stages
-- persist results
+- orchestrate the end-to-end analysis lifecycle
+- invoke optional ImageQualityService for raw photograph checks
+- invoke InferencePipeline (deterministic DSP + Model 1 -> Model 2 -> Model 3/4)
+- enforce early-stop conditions at each stage
+- persist structured analysis records via AnalysisRepository (never storing tensors or OpenCV matrices in MongoDB)
+- coordinate with DiseaseService for reference data lookup
+- construct standardized API responses
 
 DiseaseService
 - load reference information
-- map class IDs to disease entries
+- map machine class IDs to disease entries
 
 ReportService
 - generate report data
@@ -197,231 +211,163 @@ Services should use repositories instead of raw MongoDB queries scattered throug
 
 ---
 
-# ML Interfaces
+# ML Architecture & Inference Pipeline
 
-ML code should be hidden behind interfaces.
+The ML subsystem is isolated from the HTTP layer behind an explicit `InferencePipeline` and component interfaces:
 
-Conceptual interface:
+```text
+AnalysisService
+      │
+      ├──► ImageQualityService (optional photography checks on raw image)
+      │
+      └──► InferencePipeline
+                │
+                ├──► DSPPreprocessor (RGB -> HSV -> S-channel -> Otsu -> Mask -> 224x224)
+                │
+                ├──► ModelRegistry (loads models once; runs eval() + torch.inference_mode())
+                │
+                ├──► Model 1: LeafClassifier (leaf vs non_leaf)
+                │         │
+                │         └─[non_leaf]─► stop (status: not_leaf)
+                │
+                ├──► Model 2: CropClassifier (potato vs tomato vs other)
+                │         │
+                │         └─[other]────► stop (status: unsupported_crop)
+                │
+                └──► Model 3 (Potato) OR Model 4 (Tomato)
+                          │
+                          └─[healthy | early_blight | late_blight]
+```
 
-LeafClassifier
-- predict(image) -> prediction
+## Model Lifecycle & Execution Rules
 
-CropClassifier
-- predict(image) -> prediction
-
-DiseaseClassifier
-- predict(image) -> prediction
-
-Each prediction should return structured data.
-
-Example:
-
-{
-  "class_id": "leaf",
-  "confidence": 0.97
-}
-
----
-
-# Mock ML Services
-
-During frontend/backend development, use mock implementations.
-
-Examples:
-
-MockLeafClassifier
-
-MockCropClassifier
-
-MockTomatoClassifier
-
-MockPotatoClassifier
-
-These should implement the same interface as future real models.
-
-Later:
-
-MockTomatoClassifier
-
-can be replaced with:
-
-PyTorchTomatoClassifier
-
-without changing route or service contracts.
+1. **Model Registry**: Models are heavy artifacts loaded **once** at application startup or singleton initialization via `ModelRegistry`. Models must never be re-instantiated on every incoming HTTP request.
+2. **Inference Mode**: All forward passes execute strictly with `model.eval()` under `torch.inference_mode()` (or `@torch.no_grad()`) to disable autograd graphs and minimize latency and memory consumption.
+3. **Deterministic DSP Preprocessing**:
+   - Executes the 10-step foreground segmentation: RGB -> HSV -> Saturation channel -> Gaussian blur -> Otsu thresholding -> morphological opening -> morphological closing -> connected-component filtering -> largest foreground blob -> apply mask to original RGB -> black background -> resize/center-crop to 224×224 -> model-specific tensor normalization.
+   - **Normalization Rule**: Model 1 normalization tensors must be loaded from `metadata/model1_normalization.json` computed directly during training. Never silently substitute generic ImageNet mean/std. Production backend code must not depend on an absolute development filesystem path; the deployment model artifact bundle should include or reference the exact versioned preprocessing/normalization metadata used during training.
+   - **Shared DSP Representation**: The deterministic pre-normalization DSP representation (e.g. the processed 224×224 RGB image) may potentially be reused across pipeline stages if downstream models are trained with compatible DSP input semantics. Each model may still require its own tensor conversion and normalization metadata. Whether the processed representation itself is reusable must ultimately be determined from the actual training contracts of Models 2–4.
+4. **DSP Derived Artifact Storage Policy**:
+   - Inference tensors and OpenCV matrices are **never** stored in MongoDB.
+   - Transient DSP intermediates may remain ephemeral.
+   - Derived DSP or explanation images may be stored in object storage later only when a product, demo, or explainability feature explicitly requires retention.
+   - MongoDB stores only metadata and references for any retained derived artifact.
 
 ---
 
-# Hierarchical Analysis Pipeline
+## ML Interfaces
 
-AnalysisService should orchestrate:
+Conceptual interfaces:
 
-1. image validation
-2. image quality assessment
-3. leaf/non-leaf classification
-4. crop classification
-5. crop-specific disease classification
-6. result persistence
-7. response construction
+```python
+class DSPPreprocessor(Protocol):
+    def preprocess(self, image_bytes: bytes, normalization_metadata_path: str) -> torch.Tensor:
+        ...
 
-Conceptual flow:
+class LeafClassifier(Protocol):
+    def predict(self, tensor: torch.Tensor) -> StagePrediction:
+        # returns label: "leaf" | "non_leaf", score: float, model_version: str
+        ...
 
-image
-→ quality
-→ leaf classifier
-→ crop classifier
-→ disease classifier
-→ analysis record
+class CropClassifier(Protocol):
+    def predict(self, tensor: torch.Tensor) -> StagePrediction:
+        # returns label: "potato" | "tomato" | "other", score: float, model_version: str
+        ...
 
----
-
-# Pipeline Stop Conditions
-
-## Quality Failed
-
-If quality fails:
-
-status = quality_failed
-
-Do not run:
-- leaf classifier
-- crop classifier
-- disease classifier
+class DiseaseClassifier(Protocol):
+    def predict(self, tensor: torch.Tensor) -> DiseasePrediction:
+        # returns class_id: "healthy" | "early_blight" | "late_blight", score: float, model_version: str
+        ...
+```
 
 ---
 
-## Not Leaf
+## Mock ML Services
 
-If leaf classifier returns non_leaf:
+During early frontend/backend integration, mock implementations honor these exact interfaces:
 
-status = not_leaf
+- `MockLeafClassifier`
+- `MockCropClassifier`
+- `MockPotatoClassifier`
+- `MockTomatoClassifier`
 
-Do not run:
-- crop classifier
-- disease classifier
-
----
-
-## Unsupported Crop
-
-If crop classifier returns other_leaf:
-
-status = unsupported_crop
-
-Do not run:
-- disease classifier
+When PyTorch models are integrated via `ModelRegistry`, route handlers and database repositories require zero changes.
 
 ---
 
-## Tomato
+## Hierarchical Pipeline Orchestration & Early-Stop Conditions
 
-Route to:
-Tomato disease classifier
+`AnalysisService` coordinates the pipeline and enforces immediate early-stopping:
+
+1. **Raw Image Validation**: File format, payload size, basic decode.
+2. **Optional Image Quality Check**: Evaluates photograph quality checks (resolution, sharpness/blur, exposure/lighting, contrast). Candidate algorithms such as Tenengrad, Laplacian-based sharpness measures, or frequency-domain approaches belong strictly to this product quality gate (distinct from the deterministic ML DSP preprocessing pipeline). Product image quality metrics and thresholds remain to be established from validation and field images. If the photograph fails one or more quality checks, status = `quality_failed`. Pipeline stops. No ML models are invoked.
+3. **DSP Preprocessing**: Deterministic segmentation and normalization to 224×224 tensor.
+4. **Stage 1 (Model 1 — Leaf Check)**:
+   - Evaluates: `leaf` vs `non_leaf`
+   - If `non_leaf`: status = `not_leaf`. Pipeline stops. Crop and disease models are **not** invoked.
+5. **Stage 2 (Model 2 — Crop Check)**:
+   - Evaluates: `potato` vs `tomato` vs `other`
+   - If `other`: status = `unsupported_crop`. Pipeline stops. Disease models are **not** invoked.
+6. **Stage 3 (Model 3 / Model 4 — Crop-Specific Disease Classification)**:
+   - If `potato`: routed exclusively to Model 3 (`healthy`, `early_blight`, `late_blight`).
+   - If `tomato`: routed exclusively to Model 4 (`healthy`, `early_blight`, `late_blight`).
+   - If condition is `healthy`: status = `healthy` (the supported crop image most closely matched the healthy class among conditions supported by the current model).
+   - If condition is `early_blight` or `late_blight`: status = `disease_detected` (the disease model predicted one of the currently supported disease classes).
+   - *Note*: PlantDx is an automated image classification system, not a biological or laboratory confirmation.
+7. **Persistence**: Saves analysis record with intermediate stage details (`leaf_check`, `crop_check`, `prediction`) to MongoDB.
 
 ---
 
-## Potato
-
-Route to:
-Potato disease classifier
-
----
-
-# Analysis Status Enum
+## Analysis Status Enum
 
 Supported values:
 
-- quality_failed
-- not_leaf
-- unsupported_crop
-- healthy
-- disease_detected
-- analysis_failed
+- `quality_failed`: The uploaded photograph failed one or more product quality checks (resolution, sharpness/blur, exposure/lighting, contrast).
+- `not_leaf`: Model 1 classified the input as `non_leaf`.
+- `unsupported_crop`: Model 2 classified the crop as `other`.
+- `healthy`: Supported crop image most closely matched the healthy class among supported conditions.
+- `disease_detected`: Disease model predicted one of the supported disease classes (`early_blight` or `late_blight`).
+- `analysis_failed`: Pipeline execution or runtime error.
 
-These values must remain aligned with:
-
-- API contract
-- frontend constants
-- database model
+These values remain strictly aligned across API contracts, frontend constants, and database schemas.
 
 ---
 
-# Image Quality Service
+# Disease Classification & Machine Labels
 
-Initial checks may include:
+### Current Disease Scope
+The current supported disease class IDs are:
+- `healthy`
+- `early_blight`
+- `late_blight`
 
-- resolution
-- sharpness
-- lighting
-- contrast
+The class mapping may be versioned or expanded if future trained models support additional conditions.
 
-Return structured values.
+Under this current scope, the supported crop and disease combinations are:
+1. `potato` — `healthy`
+2. `potato` — `early_blight`
+3. `potato` — `late_blight`
+4. `tomato` — `healthy`
+5. `tomato` — `early_blight`
+6. `tomato` — `late_blight`
 
-Example:
+### Invariant Machine Labels
+The machine tokens stored and returned by services are invariant:
+- Crops: `potato`, `tomato`, `other`
+- Leaf status: `leaf`, `non_leaf`
+- Disease conditions: `healthy`, `early_blight`, `late_blight`
 
-{
-  "status": "needs_improvement",
-  "checks": {
-    "sharpness": {
-      "status": "needs_improvement",
-      "reason": "blur_detected"
-    }
-  }
-}
+User-facing display names ("Early Blight", "Late Blight", "Healthy Leaf") are resolved through `DiseaseService` from the reference database. Latin scientific names do not form part of the ML class identity; they may later live in `disease_reference` educational content after being deliberately sourced and reviewed.
 
-Do not return frontend-specific copy such as:
+### Model Score vs. Probability Calibration Caveat
+Backend models output class activation scores via Softmax. In documentation, APIs, and schemas, these values are designated as **`score`**, **`model score`**, or **`model confidence`**.
+> [!NOTE]
+> Deep neural network Softmax outputs are uncalibrated heuristics and must not be characterized as calibrated real-world probabilities.
 
-"Hold the camera steady."
-
-The frontend maps reason codes to messages.
-
----
-
-# Quality Thresholds
-
-Do not hard-code experimental DSP thresholds across route or service files.
-
-Centralize thresholds in:
-
-configuration
-
-or
-
-quality settings
-
-Example conceptual configuration:
-
-QUALITY_MIN_WIDTH
-QUALITY_MIN_HEIGHT
-QUALITY_BLUR_THRESHOLD
-QUALITY_BRIGHTNESS_MIN
-QUALITY_BRIGHTNESS_MAX
-QUALITY_CONTRAST_MIN
-
-Values should later be justified experimentally.
-
----
-
-# Disease Classification
-
-Disease models return class IDs.
-
-Example:
-
-{
-  "class_id": "tomato_healthy",
-  "confidence": 0.94
-}
-
-or:
-
-{
-  "class_id": "MODEL_CLASS_ID",
-  "confidence": 0.88
-}
-
-Class display names and agricultural reference content should be resolved through the reference layer.
-
-Do not hard-code disease descriptions inside ML classifier code.
+### Explainability & Field Validation Status
+- Grad-CAM and SHAP explainability pipelines are currently **not implemented**.
+- INT8 quantization and on-device optimization are **not implemented**.
+- Field/wild validation is pending baseline model completion.
 
 ---
 
