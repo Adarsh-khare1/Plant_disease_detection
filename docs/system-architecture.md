@@ -129,3 +129,51 @@ Initial scope:
 Final disease classes will be defined from the selected datasets and ML experiments.
 
 UI prototypes must not be treated as the source of truth for disease classes.
+
+## Hierarchical ML Pipeline
+
+PlantDx uses a staged prediction pipeline.
+
+### Stage 1 — Leaf Validation
+
+Input:
+Uploaded image
+
+Output:
+- leaf
+- non_leaf
+
+Likely data sources:
+- PlantVillage for leaf images
+- sampled Places365 images for non-leaf scenes
+- sampled Caltech-256 images for non-leaf objects
+
+### Stage 2 — Crop Classification
+
+Runs only when Stage 1 predicts leaf.
+
+Output:
+- tomato
+- potato
+- other_leaf
+
+### Stage 3 — Disease Classification
+
+If tomato:
+route to Tomato disease model.
+
+If potato:
+route to Potato disease model.
+
+If other_leaf:
+stop and return unsupported crop.
+
+### Pipeline Outcomes
+
+- invalid_image
+- quality_failed
+- not_leaf
+- unsupported_crop
+- healthy
+- disease_detected
+- analysis_failed
