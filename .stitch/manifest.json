@@ -1,0 +1,109 @@
+[
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "13e1257919e1481cb0f5434cca5e2458",
+        "localFolder":  "result-disease-template",
+        "htmlSource":  "screens/result-disease-template/source.html",
+        "stitchScreenTitle":  "PlantDx — Analysis Result",
+        "screenshotSource":  "screens/result-disease-template/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth. Disease result: use its layout only; do not treat Early Blight or any Stitch-generated disease class as authoritative; final disease names come from the ML dataset/class mapping."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "e8efe429650c4029b389b07d1292a13f",
+        "localFolder":  "result-healthy",
+        "htmlSource":  "screens/result-healthy/source.html",
+        "stitchScreenTitle":  "PlantDx — Analysis Result (Healthy)",
+        "screenshotSource":  "screens/result-healthy/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "b4fa3779885b4cce9b6746c6120fb9f1",
+        "localFolder":  "landing",
+        "htmlSource":  "screens/landing/source.html",
+        "stitchScreenTitle":  "PlantDx — Agricultural Diagnostic Platform",
+        "screenshotSource":  "screens/landing/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "be23b0c8bbbf46958e10993adb2e8e0d",
+        "localFolder":  "result-not-leaf",
+        "htmlSource":  "screens/result-not-leaf/source.html",
+        "stitchScreenTitle":  "PlantDx — Analysis Result (Not a Leaf)",
+        "screenshotSource":  "screens/result-not-leaf/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "3d71555557034b228c7397cba7c684fa",
+        "localFolder":  "analyze-selected",
+        "htmlSource":  "screens/analyze-selected/source.html",
+        "stitchScreenTitle":  "PlantDx — Analyze a Leaf (Image Selected)",
+        "screenshotSource":  "screens/analyze-selected/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "88ee7fc3f4eb4b6e914b38b69ee2c5df",
+        "localFolder":  "quality-needs-improvement",
+        "htmlSource":  "screens/quality-needs-improvement/source.html",
+        "stitchScreenTitle":  "PlantDx — Image Quality Check (Needs Improvement)",
+        "screenshotSource":  "screens/quality-needs-improvement/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "a362c09108df41b0bb80b9255fa159a9",
+        "localFolder":  "quality-passed",
+        "htmlSource":  "screens/quality-passed/source.html",
+        "stitchScreenTitle":  "PlantDx — Image Quality Check (Passed)",
+        "screenshotSource":  "screens/quality-passed/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "b2f56e40d82d4efb983f8469da6d0383",
+        "localFolder":  "analyze-upload",
+        "htmlSource":  "screens/analyze-upload/source.html",
+        "stitchScreenTitle":  "PlantDx — Analyze a Leaf (Upload)",
+        "screenshotSource":  "screens/analyze-upload/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "e910633964ac481a8c3ae24d8d3d7583",
+        "localFolder":  "dashboard",
+        "htmlSource":  "screens/dashboard/source.html",
+        "stitchScreenTitle":  "PlantDx — Authenticated Dashboard",
+        "screenshotSource":  "screens/dashboard/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "281df08e307d438f8679f61ba66dc145",
+        "localFolder":  "result-unsupported-crop",
+        "htmlSource":  "screens/result-unsupported-crop/source.html",
+        "stitchScreenTitle":  "PlantDx — Analysis Result (Unsupported Crop)",
+        "screenshotSource":  "screens/result-unsupported-crop/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth."
+    },
+    {
+        "approvalStatus":  "Approved",
+        "stitchScreenId":  "778b1e0b5d8a4043877cd0f3ebecf865",
+        "localFolder":  "analyzing",
+        "htmlSource":  "screens/analyzing/source.html",
+        "stitchScreenTitle":  "PlantDx — Analyzing Leaf (In Progress)",
+        "screenshotSource":  "screens/analyzing/screenshot.png",
+        "implementationNotes":  "General: Stitch HTML is REFERENCE material, not production architecture; do not copy generated HTML blindly; production implementation must follow docs/frontend-architecture.md; docs/ remains the behavioral/engineering source of truth; Stitch remains the visual source of truth. Analyzing screen: use its visual/layout structure; ignore invented laboratory, station, batch, protocol, model-version, telemetry and disease-scope terminology."
+    },
+    {
+        "stitchScreenId":  "154dbde75c464b5ca45ea31cda5a63e3",
+        "localFolder":  "assets",
+        "htmlSource":  "assets/plantdx-logo.svg",
+        "stitchScreenTitle":  "PlantDx Brand Logo",
+        "approvalStatus":  "Approved",
+        "implementationNotes":  "Brand Logo SVG"
+    }
+]

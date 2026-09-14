@@ -1,0 +1,161 @@
+{
+    "name":  "projects/320350372834485864",
+    "title":  "PlantDx",
+    "designTheme":  {
+                        "colorMode":  "LIGHT",
+                        "font":  "NEWSREADER",
+                        "roundness":  "ROUND_FOUR",
+                        "customColor":  "#1b3b2b",
+                        "headlineFont":  "NEWSREADER",
+                        "bodyFont":  "IBM_PLEX_SANS",
+                        "labelFont":  "IBM_PLEX_SANS",
+                        "namedColors":  {
+                                            "on_primary_container":  "#83a590",
+                                            "inverse_on_surface":  "#f1f1ef",
+                                            "primary_fixed":  "#c7ebd4",
+                                            "tertiary":  "#122317",
+                                            "inverse_surface":  "#2f3130",
+                                            "primary_fixed_dim":  "#abcfb8",
+                                            "on_secondary_container":  "#733d00",
+                                            "secondary_fixed":  "#ffdcc2",
+                                            "surface_bright":  "#f9f9f7",
+                                            "primary":  "#032517",
+                                            "tertiary_fixed_dim":  "#b7ccb9",
+                                            "on_primary_fixed_variant":  "#2d4d3c",
+                                            "surface_tint":  "#456553",
+                                            "on_background":  "#1a1c1b",
+                                            "on_surface_variant":  "#424843",
+                                            "background":  "#f9f9f7",
+                                            "tertiary_container":  "#27392c",
+                                            "surface_variant":  "#e2e3e1",
+                                            "inverse_primary":  "#abcfb8",
+                                            "on_secondary":  "#ffffff",
+                                            "on_tertiary_fixed_variant":  "#394b3d",
+                                            "surface_container_lowest":  "#ffffff",
+                                            "on_error":  "#ffffff",
+                                            "surface_container_low":  "#f4f4f2",
+                                            "surface_container_high":  "#e8e8e6",
+                                            "primary_container":  "#1b3b2b",
+                                            "secondary":  "#8e4e08",
+                                            "on_primary":  "#ffffff",
+                                            "error_container":  "#ffdad6",
+                                            "tertiary_fixed":  "#d3e8d5",
+                                            "on_tertiary_fixed":  "#0e1f13",
+                                            "on_tertiary":  "#ffffff",
+                                            "on_surface":  "#1a1c1b",
+                                            "on_secondary_fixed":  "#2e1500",
+                                            "surface_container":  "#eeeeec",
+                                            "on_tertiary_container":  "#8ea391",
+                                            "surface":  "#f9f9f7",
+                                            "surface_container_highest":  "#e2e3e1",
+                                            "secondary_container":  "#fda95f",
+                                            "on_primary_fixed":  "#002113",
+                                            "secondary_fixed_dim":  "#ffb77c",
+                                            "outline_variant":  "#c1c8c2",
+                                            "error":  "#ba1a1a",
+                                            "on_secondary_fixed_variant":  "#6d3900",
+                                            "surface_dim":  "#dadad8",
+                                            "outline":  "#727973",
+                                            "on_error_container":  "#93000a"
+                                        },
+                        "designMd":  "---\nname: Botanical Diagnostic Rigor\ncolors:\n  surface: \u0027#f9f9f7\u0027\n  surface-dim: \u0027#dadad8\u0027\n  surface-bright: \u0027#f9f9f7\u0027\n  surface-container-lowest: \u0027#ffffff\u0027\n  surface-container-low: \u0027#f4f4f2\u0027\n  surface-container: \u0027#eeeeec\u0027\n  surface-container-high: \u0027#e8e8e6\u0027\n  surface-container-highest: \u0027#e2e3e1\u0027\n  on-surface: \u0027#1a1c1b\u0027\n  on-surface-variant: \u0027#424843\u0027\n  inverse-surface: \u0027#2f3130\u0027\n  inverse-on-surface: \u0027#f1f1ef\u0027\n  outline: \u0027#727973\u0027\n  outline-variant: \u0027#c1c8c2\u0027\n  surface-tint: \u0027#456553\u0027\n  primary: \u0027#032517\u0027\n  on-primary: \u0027#ffffff\u0027\n  primary-container: \u0027#1b3b2b\u0027\n  on-primary-container: \u0027#83a590\u0027\n  inverse-primary: \u0027#abcfb8\u0027\n  secondary: \u0027#8e4e08\u0027\n  on-secondary: \u0027#ffffff\u0027\n  secondary-container: \u0027#fda95f\u0027\n  on-secondary-container: \u0027#733d00\u0027\n  tertiary: \u0027#122317\u0027\n  on-tertiary: \u0027#ffffff\u0027\n  tertiary-container: \u0027#27392c\u0027\n  on-tertiary-container: \u0027#8ea391\u0027\n  error: \u0027#ba1a1a\u0027\n  on-error: \u0027#ffffff\u0027\n  error-container: \u0027#ffdad6\u0027\n  on-error-container: \u0027#93000a\u0027\n  primary-fixed: \u0027#c7ebd4\u0027\n  primary-fixed-dim: \u0027#abcfb8\u0027\n  on-primary-fixed: \u0027#002113\u0027\n  on-primary-fixed-variant: \u0027#2d4d3c\u0027\n  secondary-fixed: \u0027#ffdcc2\u0027\n  secondary-fixed-dim: \u0027#ffb77c\u0027\n  on-secondary-fixed: \u0027#2e1500\u0027\n  on-secondary-fixed-variant: \u0027#6d3900\u0027\n  tertiary-fixed: \u0027#d3e8d5\u0027\n  tertiary-fixed-dim: \u0027#b7ccb9\u0027\n  on-tertiary-fixed: \u0027#0e1f13\u0027\n  on-tertiary-fixed-variant: \u0027#394b3d\u0027\n  background: \u0027#f9f9f7\u0027\n  on-background: \u0027#1a1c1b\u0027\n  surface-variant: \u0027#e2e3e1\u0027\ntypography:\n  display:\n    fontFamily: Newsreader\n    fontSize: 32px\n    fontWeight: \u0027500\u0027\n    lineHeight: \u00271.2\u0027\n  display-mobile:\n    fontFamily: Newsreader\n    fontSize: 28px\n    fontWeight: \u0027500\u0027\n    lineHeight: \u00271.25\u0027\n  headline-lg:\n    fontFamily: Newsreader\n    fontSize: 26px\n    fontWeight: \u0027500\u0027\n    lineHeight: \u00271.25\u0027\n  headline-lg-mobile:\n    fontFamily: Newsreader\n    fontSize: 22px\n    fontWeight: \u0027500\u0027\n    lineHeight: \u00271.3\u0027\n  headline-md:\n    fontFamily: Newsreader\n    fontSize: 20px\n    fontWeight: \u0027600\u0027\n    lineHeight: \u00271.3\u0027\n  headline-sm:\n    fontFamily: Newsreader\n    fontSize: 16px\n    fontWeight: \u0027600\u0027\n    lineHeight: \u00271.4\u0027\n  body-lg:\n    fontFamily: IBM Plex Sans\n    fontSize: 16px\n    fontWeight: \u0027400\u0027\n    lineHeight: \u00271.55\u0027\n  body-md:\n    fontFamily: IBM Plex Sans\n    fontSize: 15px\n    fontWeight: \u0027400\u0027\n    lineHeight: \u00271.55\u0027\n  body-sm:\n    fontFamily: IBM Plex Sans\n    fontSize: 13px\n    fontWeight: \u0027400\u0027\n    lineHeight: \u00271.5\u0027\n  label-md:\n    fontFamily: IBM Plex Sans\n    fontSize: 14px\n    fontWeight: \u0027500\u0027\n    lineHeight: \u00271.2\u0027\n  label-sm:\n    fontFamily: IBM Plex Sans\n    fontSize: 12px\n    fontWeight: \u0027500\u0027\n    lineHeight: \u00271.3\u0027\n  specimen-tag:\n    fontFamily: IBM Plex Sans\n    fontSize: 11px\n    fontWeight: \u0027600\u0027\n    lineHeight: \u00271.4\u0027\n    letterSpacing: 0.05em\nrounded:\n  sm: 0.125rem\n  DEFAULT: 0.25rem\n  md: 0.375rem\n  lg: 0.5rem\n  xl: 0.75rem\n  full: 9999px\nspacing:\n  gutter: 1rem\n  gutter-md: 1.5rem\n  gutter-lg: 2rem\n  margin: 1rem\n  margin-md: 1.5rem\n  margin-lg: 2.5rem\n  space-xs: 0.25rem\n  space-sm: 0.5rem\n  space-md: 1rem\n  space-lg: 1.5rem\n  space-xl: 2.5rem\n---\n\n## Brand \u0026 Style\n\nThe design system is engineered for field agronomists, commercial Solanaceae growers, and plant pathology researchers. It balances scientific authority with high-utility field ergonomics. The brand evokes the calm, meticulous precision of a classical herbarium paired with modern computational pathology.\n\n### Visual Philosophy \u0026 Style Movement\n- **Movement:** Scientific Editorial Modernism. The aesthetic synthesizes botanical plate documentation, specimen archival standards, and tactile field utility.\n- **Tone:** Empirically grounded, authoritative, clear-eyed, and measured. Never clinical to the point of sterility; never folksy or decorative.\n- **Anti-patterns:** Strictly eschew neon foliage greens, rounded cartoon iconography, glassmorphic blurs, artificial tech-mesh gradients, and generic SaaS floating cards. Avoid AI tropes like generic sparkle icons, robotic helpers, and unnecessary animations that undermine diagnostic credibility.\n- **Sunlight \u0026 Field Reality:** Interfaces prioritize direct ambient legibility over low-contrast subtlety. Every primary interactive element respects tactile minimums (44px target sizes) suited for gloved or outdoor operation under variable lighting conditions.\n\n## Colors\n\nThe palette draws strictly from natural mineral pigments, chlorophyll concentrations, and archival specimen paper. Contrast levels meet or exceed WCAG AAA standards for reading clarity in both high-glare greenhouse environments and dim inspection sheds.\n\n### Structural Palette\n- **Primary (`#1B3B2B`):** Deep Forest Chlorophyll. Used for key interactive anchors, top-level navigation headers, dominant buttons, and primary visual grounding.\n- **Secondary (`#C87D38`):** Warm Ochre Clay. An earth-derived accent deployed deliberately for secondary diagnostic highlights, focus indicators, active inspection markers, and targeted callouts.\n- **Tertiary (`#4A5D4E`):** Warm Loam / Muted Silt. Serves as structural supporting tone for subheadings, taxonomy categories, and data table headers.\n- **Neutral Canvas (`#FBFBF9`):** Pale Parchment. A warm, glare-reducing off-white base preventing optical fatigue during extended diagnostic review.\n\n### Surface \u0026 Boundary Layers\n- **Surface Elevation (`#FFFFFF`):** Pure Lab Paper. Applied to specimen dossiers, diagnostic result cards, and inspection input surfaces.\n- **Subtle Surface (`#F2F5F2`):** Celadon Mist. Used for alternating data rows, specimen metadata sidebars, and inactive filter backgrounds.\n- **Hairline Dividers (`#E2E7E2` / `#D1D8D1`):** Soil Mist and Specimen Gray. Crisp 1px rules establishing spatial hierarchy without ambient drop shadows.\n\n### Editorial Typography Colors\n- **Text Primary (`#141E17`):** Deep Charcoal Peat. The primary reading ink providing deep contrast without the harsh artificial bite of `#000000`.\n- **Text Secondary (`#556358`):** Slate Foliage. For metadata, contextual field captions, and supporting metric labels.\n- **Text Tertiary (`#7A8A7E`):** Field Note Gray. Reserved for disabled labels, baseline grid markers, and specimen serial numbers.\n\n### Semantic Pathology Alerts\n- **Vigorous Vitality (`#2E7D32`):** Healthy leaf tissue, negative pathogen detection, and confirmed crop vitality.\n- **Deficiency \u0026 Caution (`#D97706`):** Sun-cured Amber. Nutrient deficiencies, low-confidence diagnostic scans, and environmental stress indicators.\n- **Severe Pathogen Alert (`#991B1B`):** Crimson Ochre. Critical pathogen detection (e.g., *Phytophthora infestans*, Early Blight necrosis, Bacterial Canker quarantine alerts).\n- **Specimen Archival (`#265345`):** Deep Celadon Slate. Used for verified herbarium records and reference laboratory vouchers.\n\n## Typography\n\nThe typographic hierarchy pairs the editorial authority of **Newsreader** with the structured, technical utility of **IBM Plex Sans**. \n\n### Editorial Display \u0026 Serifs\nNewsreader is utilized for platform headings, diagnostic report titles, case history introductions, and species taxonomy titles. Its traditional proportions reflect classical botanical texts while remaining legible and sharp on high-density displays. Taxonomic species designations (*Solanum lycopersicum*, *Solanum tuberosum*) are consistently rendered in italicized Newsreader.\n\n### Technical \u0026 Data Sans-Serif\nIBM Plex Sans governs the user interface, tabular pathogen metrics, confidence thresholds, and form inputs. Its engineered grotesk structure provides unmistakable letter differentiation (distinguishing capital `I`, numeral `1`, and lowercase `l`), crucial for dosage calculations, chemical formulations, and severity percentages.\n\n### Specimen \u0026 Tag Styling\nTaxonomy badges, specimen barcodes, and pathogen class indicators utilize `specimen-tag` with uppercase transformation and a uniform `+0.05em` letter spacing. This establishes clear visual demarcation between operational diagnostic metadata and regular narrative copy.\n\n## Layout \u0026 Spacing\n\nThe layout philosophy is based on an organized scientific dossier grid. Structure and relationships are articulated through disciplined spacing increments rather than decorative borders or heavy drop shadows.\n\n### Grid Architecture\n- **Desktop (1024px and up):** 12-column structural grid with 32px (`gutter-lg`) gutters and 40px (`margin-lg`) outer canvas margins. Maximizes high-density side-by-side analysis (microscopic image analysis on the left; symptomatic taxonomy and treatment regimens on the right).\n- **Tablet (768px – 1023px):** 8-column grid with 24px (`gutter-md`) gutters and 24px (`margin-md`) margins.\n- **Mobile (below 768px):** 4-column layout with 16px (`gutter`) gutters and 16px (`margin`) margins, prioritizing single-column step-by-step diagnostic workflows.\n\n### Spacing Scale\n- `space-xs` (4px): Used strictly for badge internal padding, micro-icon gaps, and paired metric labels.\n- `space-sm` (8px): Form input inner padding, compact table row gaps, and icon-to-label separation.\n- `space-md` (16px): Default component padding, list item gaps, and inline button sets.\n- `space-lg` (24px): Card surface padding, modular panel boundaries, and diagnostic group spacing.\n- `space-xl` (40px): Section transitions, specimen dossier divisions, and major view headers.\n\n### Form Factor Reflow\nOn mobile, data-dense comparisons reflow into structured linear inspection cards. Critical actions (e.g., \"Log Field Observation\", \"Confirm Diagnosis\") dock cleanly to the bottom viewport with minimum 44px tap heights to support one-handed field operation.\n\n## Elevation \u0026 Depth\n\nVisual hierarchy is communicated through tonal layering and hair-fine boundary lines rather than heavy dropshadows or floating visual constructs.\n\n### Structural Stratification\n- **Floor (Canvas):** The base `#FBFBF9` acts as the primary desk or workbench surface.\n- **Panel Surface (Level 1):** Solid `#FFFFFF` surfaces defined by a 1px continuous rule in Soil Mist (`#E2E7E2`). This grounds specimen records and diagnostic outputs directly to the viewport.\n- **Active / Focused Layer (Level 2):** When a specimen photograph or diagnostic card is actively inspected or expanded, depth is rendered via a single hairline highlight border (`#1B3B2B` at 20% opacity) combined with a soft, non-directional resting shadow: `0 1px 3px rgba(20, 30, 23, 0.06), 0 1px 2px rgba(20, 30, 23, 0.04)`.\n- **Modals \u0026 Overlays (Level 3):** Lightboxes displaying macro crop leaf scans use a solid backdrop tint of Deep Charcoal Peat (`#141E17` at 75% opacity) to isolate specimen color fidelity from surrounding UI, framed in a clean white structural container.\n\n## Shapes\n\nThe design system employs a restrained **Soft (`1`)** shape language. Corners are slightly blunted (4px default, 8px for larger containment panels) to avoid cold clinical sterility while firmly avoiding casual, toy-like pill shapes.\n\n### Corner Radius Standards\n- **Buttons, Form Inputs, Badges (`0.25rem` / 4px):** Maintains structural squareness, reinforcing the sensation of archival labels, microscopic slide mounts, and index cards.\n- **Cards, Diagnostic Modules, Lightboxes (`0.5rem` / 8px):** Provides gentle structural containment for composite dossiers without floating or distracting from data.\n- **Interactive Checkboxes:** 2px rounded corners to balance clickability with technical precision.\n\n## Components\n\n### Buttons \u0026 Interactive Triggers\n- **Primary Action:** Solid Deep Forest Chlorophyll (`#1B3B2B`) fill with crisp off-white text (`#FBFBF9`). 4px corner radius. Minimum height of 44px for field reliability. Hover states darken subtly to `#142C20` without expansion or displacement.\n- **Secondary Action:** Transparent background with a 1px solid Deep Forest Chlorophyll border (`#1B3B2B`), Peat text (`#141E17`), transitioning to Celadon Mist (`#F2F5F2`) on hover.\n- **Destructive / Urgent Action:** Deep Crimson Rust (`#991B1B`) fill or 1px hairline border for immediate quarantine declarations.\n- **Focus Rings:** 2px offset ring in Warm Ochre Clay (`#C87D38`) ensures visible keyboard and accessibility navigation.\n\n### Diagnostic Badges \u0026 Taxonomy Chips\n- **Taxonomy Badge:** Styled as herbarium classification tags. Subtle Celadon Mist (`#F2F5F2`) background, 1px border (`#D1D8D1`), and 11px uppercase `specimen-tag` typography in Slate Foliage (`#556358`). Species scientific names within the tag are italicized.\n- **Pathogen Alert Chips:** High-contrast indicator dot (6px solid circle) adjacent to the pathogen diagnosis text:\n  - *Healthy:* Vigorous Leaf Green (`#2E7D32`)\n  - *Suspect:* Sun-cured Amber (`#D97706`)\n  - *Confirmed Pathogen:* Bordeaux Rust (`#991B1B`)\n\n### Input Fields \u0026 Search\n- **Structure:** Crisp white background (`#FFFFFF`) with a 1px solid hairline (`#E2E7E2`). Default height 44px with internal horizontal padding of 12px.\n- **Focus State:** Active border shifts directly to Deep Forest Chlorophyll (`#1B3B2B`) with a 1px subtle glow in Warm Ochre (`#C87D38` at 25%).\n- **Helper \u0026 Validation Labels:** Positioned directly beneath inputs in 13px IBM Plex Sans. Validation alerts employ clear icon markers alongside semantic color treatment.\n\n### Selection Controls (Checkboxes \u0026 Radios)\n- **Checkboxes:** 18x18px square containers with 2px border radius. Unchecked: 1.5px hairline border in `#7A8A7E`. Checked: Solid `#1B3B2B` fill with a sharp white checkmark glyph.\n- **Radio Buttons:** 18x18px round selector. Selected state features an inset 8px solid `#1B3B2B` dot centered on a clean white background.\n\n### Specimen Cards \u0026 Diagnostic Dossiers\n- **Structure:** `#FFFFFF` background, 8px radius, framed in 1px `#E2E7E2`. \n- **Internal Division:** Sections within a card (e.g., Symptoms, Etiology, Recommended Treatment) are delineated using 1px horizontal dividers in `#F2F5F2`, eliminating nested cards and unnecessary visual noise.\n- **Card Header:** Features dual-tone header typography: Newsreader Headline-Sm alongside an archival ID (`#PLX-8492`) in IBM Plex Sans monospace format.\n\n### Specialized Agricultural Components\n- **Confidence Severity Gauge:** A linear bar indicator (4px height) featuring calibrated segments representing model confidence (e.g., 94.2% confidence for *Alternaria solani*), transitioning from muted sand to the pathogen\u0027s respective semantic color.\n- **Field Observation Log Strip:** A compressed, thumb-friendly timestamped micro-timeline allowing agronomists to record weather, soil moisture, and initial foliar symptoms during on-site scouting.",
+                        "colorVariant":  "FIDELITY",
+                        "overridePrimaryColor":  "#1b3b2b",
+                        "overrideSecondaryColor":  "#c87d38",
+                        "overrideTertiaryColor":  "#4a5d4e",
+                        "overrideNeutralColor":  "#fbfbf9",
+                        "spacingScale":  2,
+                        "typography":  {
+                                           "label-sm":  {
+                                                            "fontFamily":  "IBM Plex Sans",
+                                                            "fontSize":  "12px",
+                                                            "fontWeight":  "500",
+                                                            "lineHeight":  "1.3"
+                                                        },
+                                           "specimen-tag":  {
+                                                                "fontFamily":  "IBM Plex Sans",
+                                                                "fontSize":  "11px",
+                                                                "fontWeight":  "600",
+                                                                "lineHeight":  "1.4",
+                                                                "letterSpacing":  "0.05em"
+                                                            },
+                                           "headline-lg":  {
+                                                               "fontFamily":  "Newsreader",
+                                                               "fontSize":  "26px",
+                                                               "fontWeight":  "500",
+                                                               "lineHeight":  "1.25"
+                                                           },
+                                           "headline-md":  {
+                                                               "fontFamily":  "Newsreader",
+                                                               "fontSize":  "20px",
+                                                               "fontWeight":  "600",
+                                                               "lineHeight":  "1.3"
+                                                           },
+                                           "label-md":  {
+                                                            "fontFamily":  "IBM Plex Sans",
+                                                            "fontSize":  "14px",
+                                                            "fontWeight":  "500",
+                                                            "lineHeight":  "1.2"
+                                                        },
+                                           "body-lg":  {
+                                                           "fontFamily":  "IBM Plex Sans",
+                                                           "fontSize":  "16px",
+                                                           "fontWeight":  "400",
+                                                           "lineHeight":  "1.55"
+                                                       },
+                                           "headline-lg-mobile":  {
+                                                                      "fontFamily":  "Newsreader",
+                                                                      "fontSize":  "22px",
+                                                                      "fontWeight":  "500",
+                                                                      "lineHeight":  "1.3"
+                                                                  },
+                                           "display":  {
+                                                           "fontFamily":  "Newsreader",
+                                                           "fontSize":  "32px",
+                                                           "fontWeight":  "500",
+                                                           "lineHeight":  "1.2"
+                                                       },
+                                           "display-mobile":  {
+                                                                  "fontFamily":  "Newsreader",
+                                                                  "fontSize":  "28px",
+                                                                  "fontWeight":  "500",
+                                                                  "lineHeight":  "1.25"
+                                                              },
+                                           "headline-sm":  {
+                                                               "fontFamily":  "Newsreader",
+                                                               "fontSize":  "16px",
+                                                               "fontWeight":  "600",
+                                                               "lineHeight":  "1.4"
+                                                           },
+                                           "body-sm":  {
+                                                           "fontFamily":  "IBM Plex Sans",
+                                                           "fontSize":  "13px",
+                                                           "fontWeight":  "400",
+                                                           "lineHeight":  "1.5"
+                                                       },
+                                           "body-md":  {
+                                                           "fontFamily":  "IBM Plex Sans",
+                                                           "fontSize":  "15px",
+                                                           "fontWeight":  "400",
+                                                           "lineHeight":  "1.55"
+                                                       }
+                                       },
+                        "spacing":  {
+                                        "gutter-md":  "1.5rem",
+                                        "space-md":  "1rem",
+                                        "space-xl":  "2.5rem",
+                                        "margin-lg":  "2.5rem",
+                                        "space-sm":  "0.5rem",
+                                        "space-xs":  "0.25rem",
+                                        "margin-md":  "1.5rem",
+                                        "margin":  "1rem",
+                                        "gutter":  "1rem",
+                                        "space-lg":  "1.5rem",
+                                        "gutter-lg":  "2rem"
+                                    },
+                        "headlineFontFamily":  "Newsreader",
+                        "bodyFontFamily":  "IBM Plex Sans",
+                        "labelFontFamily":  "IBM Plex Sans"
+                    },
+    "designMd":  null
+}
