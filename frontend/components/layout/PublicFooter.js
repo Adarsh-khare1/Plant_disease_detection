@@ -23,16 +23,16 @@ export default function PublicFooter() {
           aria-label="Footer Navigation" 
           className="flex flex-wrap items-center justify-center gap-4 font-body text-[12px] font-medium leading-[1.3] text-text-muted"
         >
-          <Link href="#principles" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
+          <Link href="/about" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
             About
           </Link>
-          <Link href="#how-it-works" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
+          <Link href="/how-it-works" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
             How It Works
           </Link>
-          <Link href="#disease-library" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
+          <Link href="/diseases" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
             Disease Library
           </Link>
-          <Link href="#technology" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
+          <Link href="/technology" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
             Technology
           </Link>
           <Link href="#help" className="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary rounded px-0.5">
