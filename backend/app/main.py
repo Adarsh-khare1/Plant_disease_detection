@@ -9,6 +9,9 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import get_logger, setup_logging
+from app.db.client import connect, disconnect
+from app.db.indexes import create_indexes
+from app.db.client import get_database
 
 setup_logging()
 logger = get_logger("main")
@@ -18,8 +21,21 @@ logger = get_logger("main")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application startup and shutdown lifespan context manager."""
     logger.info("Starting %s in [%s] mode...", settings.APP_NAME, settings.APP_ENV)
+
+    # ── MongoDB ─────────────────────────────────────────────────────────────
+    try:
+        connect(settings.MONGODB_URI, settings.MONGODB_DATABASE)
+        create_indexes(get_database())
+    except Exception as exc:  # noqa: BLE001
+        logger.error("MongoDB startup failed: %s", exc)
+        # Allow the application to start so /health can report the failure,
+        # but mark DB as unavailable.
+
     yield
-    logger.info("Shutting down %s...", settings.APP_NAME)
+
+    # ── Shutdown ─────────────────────────────────────────────────────────────
+    disconnect()
+    logger.info("Shutting down %s.", settings.APP_NAME)
 
 
 app = FastAPI(

@@ -9,8 +9,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-develop-eggs/
 dist/
+develop-eggs/
 downloads/
 eggs/
 .eggs/
@@ -36,7 +36,7 @@ env/
 *.swp
 *.swo
 
-# Environment variables
+# Environment variables — never commit real credentials
 .env
 .env.local
 
@@ -44,3 +44,6 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Local development data — uploaded images must NOT be committed
+data/

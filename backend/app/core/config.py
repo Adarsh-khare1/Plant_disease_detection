@@ -1,5 +1,6 @@
 """Typed application settings using pydantic-settings."""
 
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +19,20 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     FRONTEND_ORIGIN: str = "http://localhost:3000"
     LOG_LEVEL: str = "INFO"
+
+    # MongoDB
+    MONGODB_URI: str = "mongodb://localhost:27017"
+    MONGODB_DATABASE: str = "plantdx"
+
+    # Local image storage — resolves relative to the backend package root
+    LOCAL_STORAGE_ROOT: str = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "data",
+        "uploads",
+    )
+
+    # 10 MB upload limit (matches frontend contract)
+    MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
 
 
 settings = Settings()
