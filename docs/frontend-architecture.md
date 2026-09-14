@@ -116,7 +116,6 @@ frontend/
 │   ├── analysis/
 │   │   ├── UploadZone.js
 │   │   ├── ImagePreview.js
-│   │   ├── CropSelector.js
 │   │   ├── QualityChecklist.js
 │   │   ├── QualityWarning.js
 │   │   ├── AnalysisProgress.js
@@ -213,6 +212,9 @@ The Analyze page (`/app/analyze`) functions as a state-driven workflow:
       ├──► Healthy Leaf
       └──► Disease Detected (Early Blight / Late Blight)
 ```
+
+> [!NOTE]
+> Crop selection is not requested from the user. Crop identification is performed automatically by Model 2 after Model 1 accepts the image as a leaf.
 
 ### Analysis Progress States & User-Facing Translations
 During the analysis phase, the UI displays clear, natural agricultural language. Never display internal model designations (e.g. "Model 1", "ResNet-9", "Model 3") or arbitrary timer-based fake percentage bars:

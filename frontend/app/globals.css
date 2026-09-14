@@ -50,3 +50,23 @@
     font-family: var(--font-display);
   }
 }
+
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+    width: 20%;
+  }
+  50% {
+    transform: translateX(100%);
+    width: 60%;
+  }
+  100% {
+    transform: translateX(300%);
+    width: 20%;
+  }
+}
+
+.animate-indeterminate {
+  animation: indeterminate 2.4s ease-in-out infinite;
+}
+
