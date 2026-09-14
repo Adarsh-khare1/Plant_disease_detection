@@ -20,7 +20,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${newsreader.variable} ${ibmPlexSans.variable} antialiased`}>
+      <body className={`${newsreader.variable} ${ibmPlexSans.variable} antialiased bg-background text-text font-body min-h-screen flex flex-col selection:bg-primary/20 selection:text-primary`}>
         {children}
       </body>
     </html>

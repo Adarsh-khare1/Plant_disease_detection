@@ -7,7 +7,15 @@
   --color-primary: var(--primary);
   --color-accent: var(--accent);
   --color-tertiary: var(--tertiary);
-  --color-base: var(--background);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-low: var(--surface-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-high: var(--surface-high);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-outline: var(--outline);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
@@ -17,9 +25,13 @@
   :root {
     --background: #FBFBF9;
     --surface: #FFFFFF;
+    --surface-low: #F4F4F2;
+    --surface-container: #EEEEEC;
+    --surface-high: #E8E8E6;
     --text: #141E17;
     --text-muted: #556358;
     --border: #E2E7E2;
+    --outline: #727973;
     --primary: #1B3B2B;
     --accent: #C87D38;
     --tertiary: #4A5D4E;
