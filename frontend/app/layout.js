@@ -1,6 +1,8 @@
 import { Newsreader, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
+import { AuthProvider } from "@/lib/auth/AuthProvider";
+
 const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-newsreader",
@@ -21,8 +23,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${newsreader.variable} ${ibmPlexSans.variable} antialiased bg-background text-text font-body min-h-screen flex flex-col selection:bg-primary/20 selection:text-primary`}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
 }
+

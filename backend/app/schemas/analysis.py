@@ -80,6 +80,7 @@ class AnalysisResponse(BaseModel):
     """Full analysis response returned by POST and GET endpoints."""
 
     analysis_id: str = Field(..., description="Unique analysis identifier (UUID)")
+    user_id: Optional[str] = Field(None, description="Authenticated user ID")
     status: AnalysisStatus
     image: ImageSubDoc
     quality: Optional[QualitySubDoc] = None
@@ -88,6 +89,7 @@ class AnalysisResponse(BaseModel):
     prediction: Optional[Prediction] = None
     created_at: datetime
     updated_at: datetime
+
 
 
 class AnalysisListResponse(BaseModel):

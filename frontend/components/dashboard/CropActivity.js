@@ -1,7 +1,8 @@
-import { dashboardMockData } from '@/lib/mock/dashboard';
+import { dashboardMockData } from "@/lib/mock/dashboard";
 
-export default function CropActivity() {
-  const { title, subtitle, crops } = dashboardMockData.cropActivity;
+export default function CropActivity({ data }) {
+  const cropActivity = data || dashboardMockData.cropActivity;
+  const { title, subtitle, crops } = cropActivity;
 
   return (
     <div className="bg-surface p-5 rounded-lg border border-border/80 shadow-xs flex flex-col justify-between">

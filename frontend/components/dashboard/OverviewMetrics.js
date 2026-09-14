@@ -1,27 +1,27 @@
-import { dashboardMockData } from '@/lib/mock/dashboard';
+import { dashboardMockData } from "@/lib/mock/dashboard";
 
-export default function OverviewMetrics() {
-  const { totalAnalyses, healthyResults, potentialDiseaseResults } =
-    dashboardMockData.overview;
+export default function OverviewMetrics({ data }) {
+  const overview = data || dashboardMockData.overview;
+  const { totalAnalyses, healthyResults, potentialDiseaseResults } = overview;
 
   const cards = [
     {
       label: totalAnalyses.label,
       count: totalAnalyses.count,
       meta: totalAnalyses.meta,
-      countColor: 'text-text',
+      countColor: "text-text",
     },
     {
       label: healthyResults.label,
       count: healthyResults.count,
       meta: healthyResults.meta,
-      countColor: 'text-success',
+      countColor: "text-success",
     },
     {
       label: potentialDiseaseResults.label,
       count: potentialDiseaseResults.count,
       meta: potentialDiseaseResults.meta,
-      countColor: 'text-error',
+      countColor: "text-error",
     },
   ];
 

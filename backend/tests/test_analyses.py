@@ -6,6 +6,8 @@ Covers:
 - retrieve by ID
 - list/pagination
 - missing image / missing analysis 404 errors
+- user ownership isolation
+- unauthenticated / invalid token protection
 - canonical status values
 - error envelope consistency
 """
@@ -14,18 +16,25 @@ import pytest
 from tests.conftest import client, make_jpeg_bytes  # noqa: F401
 from app.ml import mock_inference
 
+_AUTH_HEADER = {"Authorization": "Bearer test_token_user_analyses"}
 
-def _upload_image(client) -> str:
+
+def _upload_image(client, headers=None) -> str:
+    if headers is None:
+        headers = _AUTH_HEADER
     resp = client.post(
         "/api/v1/images",
         files={"image": ("leaf.jpg", make_jpeg_bytes(), "image/jpeg")},
+        headers=headers,
     )
     assert resp.status_code == 201
     return resp.json()["image_id"]
 
 
-def _create_analysis(client, image_id: str) -> dict:
-    resp = client.post("/api/v1/analyses", json={"image_id": image_id})
+def _create_analysis(client, image_id: str, headers=None) -> dict:
+    if headers is None:
+        headers = _AUTH_HEADER
+    resp = client.post("/api/v1/analyses", json={"image_id": image_id}, headers=headers)
     assert resp.status_code == 201, resp.text
     return resp.json()
 
@@ -56,7 +65,7 @@ def test_create_analysis_success(client):
 
 
 def test_create_analysis_missing_image(client):
-    resp = client.post("/api/v1/analyses", json={"image_id": "does_not_exist"})
+    resp = client.post("/api/v1/analyses", json={"image_id": "does_not_exist"}, headers=_AUTH_HEADER)
     assert resp.status_code == 404
     assert resp.json()["error"]["code"] == "image_not_found"
 
@@ -69,7 +78,6 @@ def _run_scenario(client, scenario: str) -> dict:
     from app.schemas.image import ImageMeta
     import uuid
 
-    # Register a fake image meta directly (avoids repeated upload I/O).
     fake_id = uuid.uuid4().hex
     image_registry.register(ImageMeta(
         image_id=fake_id,
@@ -79,10 +87,11 @@ def _run_scenario(client, scenario: str) -> dict:
         size_bytes=1000,
         width=100,
         height=100,
+        user_id="user_analyses",
     ))
 
     from app.services.analysis_service import analysis_service
-    doc = analysis_service.create_analysis(image_id=fake_id, scenario=scenario)
+    doc = analysis_service.create_analysis(image_id=fake_id, user_id="user_analyses", scenario=scenario)
     return doc
 
 
@@ -140,7 +149,7 @@ def test_get_analysis_by_id(client):
     created = _create_analysis(client, image_id)
     analysis_id = created["analysis_id"]
 
-    resp = client.get(f"/api/v1/analyses/{analysis_id}")
+    resp = client.get(f"/api/v1/analyses/{analysis_id}", headers=_AUTH_HEADER)
     assert resp.status_code == 200
     data = resp.json()
     assert data["analysis_id"] == analysis_id
@@ -148,7 +157,7 @@ def test_get_analysis_by_id(client):
 
 
 def test_get_analysis_not_found(client):
-    resp = client.get("/api/v1/analyses/nonexistent_analysis_id")
+    resp = client.get("/api/v1/analyses/nonexistent_analysis_id", headers=_AUTH_HEADER)
     assert resp.status_code == 404
     assert resp.json()["error"]["code"] == "analysis_not_found"
 
@@ -156,7 +165,7 @@ def test_get_analysis_not_found(client):
 # ── List / Pagination ─────────────────────────────────────────────────────────
 
 def test_list_analyses_empty(client):
-    resp = client.get("/api/v1/analyses")
+    resp = client.get("/api/v1/analyses", headers=_AUTH_HEADER)
     assert resp.status_code == 200
     data = resp.json()
     assert data["items"] == []
@@ -167,26 +176,24 @@ def test_list_analyses_after_creation(client):
     image_id = _upload_image(client)
     _create_analysis(client, image_id)
 
-    resp = client.get("/api/v1/analyses")
+    resp = client.get("/api/v1/analyses", headers=_AUTH_HEADER)
     data = resp.json()
     assert data["total"] >= 1
     assert len(data["items"]) >= 1
 
 
 def test_list_analyses_pagination(client):
-    # Create 3 analyses.
     for _ in range(3):
         image_id = _upload_image(client)
         _create_analysis(client, image_id)
 
-    page1 = client.get("/api/v1/analyses?skip=0&limit=2").json()
-    page2 = client.get("/api/v1/analyses?skip=2&limit=2").json()
+    page1 = client.get("/api/v1/analyses?skip=0&limit=2", headers=_AUTH_HEADER).json()
+    page2 = client.get("/api/v1/analyses?skip=2&limit=2", headers=_AUTH_HEADER).json()
 
     assert len(page1["items"]) == 2
     assert page1["limit"] == 2
     assert page2["skip"] == 2
 
-    # IDs on page 1 and page 2 must not overlap.
     ids1 = {i["analysis_id"] for i in page1["items"]}
     ids2 = {i["analysis_id"] for i in page2["items"]}
     assert ids1.isdisjoint(ids2)
@@ -197,23 +204,100 @@ def test_list_ordered_newest_first(client):
         image_id = _upload_image(client)
         _create_analysis(client, image_id)
 
-    items = client.get("/api/v1/analyses").json()["items"]
+    items = client.get("/api/v1/analyses", headers=_AUTH_HEADER).json()["items"]
     timestamps = [i["created_at"] for i in items]
     assert timestamps == sorted(timestamps, reverse=True)
 
 
-# ── Error envelope consistency ────────────────────────────────────────────────
+# ── Auth & Ownership Isolation Tests ─────────────────────────────────────────
 
-def test_error_envelope_missing_analysis(client):
-    resp = client.get("/api/v1/analyses/no_such_id")
-    err = resp.json()
-    assert "error" in err
-    assert "code" in err["error"]
-    assert "message" in err["error"]
+def test_unauthenticated_request_fails(client):
+    resp = client.get("/api/v1/analyses")
+    assert resp.status_code == 401
+    assert resp.json()["error"]["code"] == "unauthorized"
 
 
-def test_error_envelope_missing_image(client):
-    resp = client.post("/api/v1/analyses", json={"image_id": "no_such_image"})
-    err = resp.json()
-    assert "error" in err
-    assert err["error"]["code"] == "image_not_found"
+def test_invalid_token_request_fails(client):
+    resp = client.get("/api/v1/analyses", headers={"Authorization": "Bearer invalid_token_xyz"})
+    assert resp.status_code == 401
+    assert resp.json()["error"]["code"] == "unauthorized"
+
+
+def test_authenticated_upload_and_create(client):
+    headers = {"Authorization": "Bearer test_token_user_alpha"}
+    upload_resp = client.post(
+        "/api/v1/images",
+        files={"image": ("leaf.jpg", make_jpeg_bytes(), "image/jpeg")},
+        headers=headers,
+    )
+    assert upload_resp.status_code == 201
+    image_id = upload_resp.json()["image_id"]
+
+    analysis_resp = client.post(
+        "/api/v1/analyses",
+        json={"image_id": image_id},
+        headers=headers,
+    )
+    assert analysis_resp.status_code == 201
+    assert analysis_resp.json()["user_id"] == "user_alpha"
+
+
+def test_user_ownership_isolation(client):
+    user1_headers = {"Authorization": "Bearer test_token_user_one"}
+    user2_headers = {"Authorization": "Bearer test_token_user_two"}
+
+    # User 1 uploads and creates analysis
+    img1 = client.post(
+        "/api/v1/images",
+        files={"image": ("leaf1.jpg", make_jpeg_bytes(), "image/jpeg")},
+        headers=user1_headers,
+    ).json()["image_id"]
+    analysis1_id = client.post(
+        "/api/v1/analyses",
+        json={"image_id": img1},
+        headers=user1_headers,
+    ).json()["analysis_id"]
+
+    # User 2 tries to access User 1's analysis -> 404 (not found for user 2)
+    resp = client.get(f"/api/v1/analyses/{analysis1_id}", headers=user2_headers)
+    assert resp.status_code == 404
+
+    # User 2 tries to run analysis on User 1's image -> 403 Forbidden
+    img_resp = client.post("/api/v1/analyses", json={"image_id": img1}, headers=user2_headers)
+    assert img_resp.status_code == 403
+
+
+def test_list_only_current_user_analyses(client):
+    u1_headers = {"Authorization": "Bearer test_token_user_red"}
+    u2_headers = {"Authorization": "Bearer test_token_user_blue"}
+
+    # User Red creates 2 analyses
+    for _ in range(2):
+        img = client.post(
+            "/api/v1/images",
+            files={"image": ("red.jpg", make_jpeg_bytes(), "image/jpeg")},
+            headers=u1_headers,
+        ).json()["image_id"]
+        client.post("/api/v1/analyses", json={"image_id": img}, headers=u1_headers)
+
+    # User Blue creates 1 analysis
+    img_blue = client.post(
+        "/api/v1/images",
+        files={"image": ("blue.jpg", make_jpeg_bytes(), "image/jpeg")},
+        headers=u2_headers,
+    ).json()["image_id"]
+    client.post("/api/v1/analyses", json={"image_id": img_blue}, headers=u2_headers)
+
+    # User Red list -> 2 items
+    red_list = client.get("/api/v1/analyses", headers=u1_headers).json()
+    assert red_list["total"] == 2
+
+    # User Blue list -> 1 item
+    blue_list = client.get("/api/v1/analyses", headers=u2_headers).json()
+    assert blue_list["total"] == 1
+
+
+def test_unauthorized_request_when_invalid_header_format(client):
+    resp = client.get("/api/v1/analyses", headers={"Authorization": "InvalidScheme token"})
+    assert resp.status_code == 401
+    assert resp.json()["error"]["code"] == "unauthorized"

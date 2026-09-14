@@ -34,5 +34,11 @@ class Settings(BaseSettings):
     # 10 MB upload limit (matches frontend contract)
     MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
 
+    # Firebase Admin Settings
+    FIREBASE_PROJECT_ID: str | None = None
+    FIREBASE_CREDENTIALS_PATH: str | None = None
+
+
+
 
 settings = Settings()

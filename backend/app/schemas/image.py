@@ -1,6 +1,8 @@
 """Pydantic schemas for uploaded image metadata."""
 
+from typing import Optional
 from pydantic import BaseModel, Field
+
 
 
 class ImageUploadResponse(BaseModel):
@@ -24,3 +26,5 @@ class ImageMeta(BaseModel):
     size_bytes: int
     width: int
     height: int
+    user_id: Optional[str] = None
+

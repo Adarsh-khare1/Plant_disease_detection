@@ -8,10 +8,12 @@ import io
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 
+from app.core.auth import AuthUser, get_current_user
 from app.core.config import settings
+
 from app.core.errors import (
     InvalidImageError,
     ImageTooLargeError,
@@ -50,7 +52,9 @@ def _get_storage() -> LocalStorage:
 @router.post("/images", response_model=ImageUploadResponse, status_code=201)
 async def upload_image(
     image: Annotated[UploadFile, File(description="Plant leaf image (JPEG, PNG, or WebP, max 10 MB)")],
+    current_user: AuthUser = Depends(get_current_user),
 ) -> ImageUploadResponse:
+
     """Upload and validate a plant leaf image.
 
     Validation steps (all authoritative — not based on extension or Content-Type alone):
@@ -137,7 +141,9 @@ async def upload_image(
         size_bytes=len(normalized_bytes),
         width=width,
         height=height,
+        user_id=current_user.uid,
     )
+
     image_registry.register(meta)
 
     logger.info(

@@ -4,11 +4,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import Icon from '@/components/ui/Icon';
-import { dashboardMockData } from '@/lib/mock/dashboard';
+import { useAuth } from '@/lib/auth/useAuth';
 
 export default function AppSidebar({ className = '', onNavClick }) {
   const pathname = usePathname();
-  const { userProfile } = dashboardMockData;
+  const { user } = useAuth();
+
+  const userName = user?.displayName || (user?.email ? user.email.split('@')[0] : 'Alex Chen');
+  const userEmail = user?.email || 'alex@example.com';
+  const initials = userName
+    ? userName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'AC';
+
+  const userProfile = {
+    name: userName,
+    role: userEmail,
+    initials: initials,
+    href: '/app/profile',
+  };
+
 
   const mainNavItems = [
     { name: 'Dashboard', href: '/app/dashboard', icon: 'grid_view' },

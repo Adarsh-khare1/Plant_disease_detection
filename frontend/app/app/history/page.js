@@ -1,22 +1,71 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { mockHistoryRecords } from '@/lib/mock/history';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { listAnalyses } from "@/lib/api/analyses";
 
 export default function HistoryPage() {
-  const [filter, setFilter] = useState('all');
-  const [search, setSearch] = useState('');
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
-  const filteredRecords = mockHistoryRecords.filter((record) => {
-    // Filter matching
-    if (filter === 'tomato' && record.cropId !== 'tomato') return false;
-    if (filter === 'potato' && record.cropId !== 'potato') return false;
-    if (filter === 'healthy' && record.resultStatus !== 'healthy') return false;
-    if (filter === 'disease' && record.resultStatus !== 'disease_detected') return false;
+  useEffect(() => {
+    async function loadHistory() {
+      try {
+        setLoading(true);
+        const data = await listAnalyses({ skip: 0, limit: 100 });
+        const items = (data.items || []).map((item) => {
+          const cropName =
+            item.crop_check?.label === "tomato"
+              ? "Tomato"
+              : item.crop_check?.label === "potato"
+              ? "Potato"
+              : "Other";
 
-    // Search matching
+          const resultTitle =
+            item.prediction?.display_name ||
+            (item.status === "healthy"
+              ? "Healthy result"
+              : item.status === "not_leaf"
+              ? "No leaf detected"
+              : item.status === "unsupported_crop"
+              ? "Unsupported crop"
+              : "Analysis failed");
+
+          const scorePct = item.prediction?.score != null ? Math.round(item.prediction.score * 100) : null;
+
+          return {
+            id: item.analysis_id,
+            imageName: item.image?.filename || "specimen.jpg",
+            crop: cropName,
+            cropId: item.crop_check?.label || "other",
+            result: resultTitle,
+            resultStatus: item.status,
+            confidenceScore: scorePct,
+            qualityStatus: item.quality?.status === "passed" ? "Quality: Passed" : "Needs Attention",
+            date: new Date(item.created_at).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }),
+            imageUrl: "/images/results/sample-healthy-leaf.jpg",
+          };
+        });
+        setRecords(items);
+      } catch (err) {
+        console.warn("Failed to load analysis history:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadHistory();
+  }, []);
+
+  const filteredRecords = records.filter((record) => {
+    if (filter === "tomato" && record.cropId !== "tomato") return false;
+    if (filter === "potato" && record.cropId !== "potato") return false;
+    if (filter === "healthy" && record.resultStatus !== "healthy") return false;
+    if (filter === "disease" && record.resultStatus !== "disease_detected") return false;
+
     if (search.trim()) {
       const q = search.toLowerCase();
       const matchName = record.imageName.toLowerCase().includes(q);
@@ -43,19 +92,19 @@ export default function HistoryPage() {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-1.5">
           {[
-            { id: 'all', label: 'All' },
-            { id: 'tomato', label: 'Tomato' },
-            { id: 'potato', label: 'Potato' },
-            { id: 'healthy', label: 'Healthy' },
-            { id: 'disease', label: 'Potential disease' },
+            { id: "all", label: "All" },
+            { id: "tomato", label: "Tomato" },
+            { id: "potato", label: "Potato" },
+            { id: "healthy", label: "Healthy" },
+            { id: "disease", label: "Potential disease" },
           ].map((item) => (
             <button
               key={item.id}
               onClick={() => setFilter(item.id)}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 filter === item.id
-                  ? 'bg-emerald-800 text-white'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  ? "bg-emerald-800 text-white"
+                  : "bg-stone-100 text-stone-700 hover:bg-stone-200"
               }`}
             >
               {item.label}
@@ -77,7 +126,12 @@ export default function HistoryPage() {
 
       {/* History List */}
       <div className="bg-white border border-stone-200 rounded-lg overflow-hidden shadow-xs">
-        {filteredRecords.length === 0 ? (
+        {loading ? (
+          <div className="p-12 text-center text-stone-500 text-xs flex flex-col items-center justify-center space-y-2">
+            <div className="w-5 h-5 border-2 border-emerald-800 border-t-transparent rounded-full animate-spin" />
+            <span>Loading history from backend...</span>
+          </div>
+        ) : filteredRecords.length === 0 ? (
           <div className="p-8 text-center text-stone-500 text-sm">
             No analysis records match your selected filter or search query.
           </div>
@@ -119,11 +173,11 @@ export default function HistoryPage() {
                     <td className="py-3 px-4">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
-                          rec.resultStatus === 'healthy'
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                            : rec.resultStatus === 'disease_detected'
-                            ? 'bg-amber-50 text-amber-900 border-amber-200'
-                            : 'bg-stone-100 text-stone-700 border-stone-200'
+                          rec.resultStatus === "healthy"
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                            : rec.resultStatus === "disease_detected"
+                            ? "bg-amber-50 text-amber-900 border-amber-200"
+                            : "bg-stone-100 text-stone-700 border-stone-200"
                         }`}
                       >
                         {rec.result}

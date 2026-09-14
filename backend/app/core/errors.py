@@ -23,6 +23,31 @@ class AppError(Exception):
         self.status_code = status_code
 
 
+# ── Auth errors ───────────────────────────────────────────────────────────────
+
+class UnauthorizedError(AppError):
+    """Missing or invalid authentication credentials."""
+
+    def __init__(self, message: str = "Authentication required.") -> None:
+        super().__init__(
+            code="unauthorized",
+            message=message,
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+
+class ForbiddenError(AppError):
+    """User does not own or have permission to access resource."""
+
+    def __init__(self, message: str = "Access denied.") -> None:
+        super().__init__(
+            code="forbidden",
+            message=message,
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+
+
 # ── Image errors ──────────────────────────────────────────────────────────────
 
 class InvalidImageError(AppError):

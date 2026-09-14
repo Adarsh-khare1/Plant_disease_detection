@@ -29,12 +29,14 @@ class AnalysisService:
     def create_analysis(
         self,
         image_id: str,
+        user_id: Optional[str] = None,
         scenario: str = "",
     ) -> Dict[str, Any]:
         """Run the full analysis pipeline for an uploaded image.
 
         Args:
             image_id: UUID of the previously uploaded image.
+            user_id: Optional authenticated user ID.
             scenario: Optional mock inference scenario override (testing only).
 
         Returns:
@@ -42,12 +44,19 @@ class AnalysisService:
 
         Raises:
             ImageNotFoundError: If ``image_id`` is not in the registry.
+            ForbiddenError: If ``image_id`` belongs to another user.
             AnalysisFailedError: On unexpected pipeline failure.
         """
         # ── 1. Retrieve image metadata ─────────────────────────────────────
         meta = image_registry.get(image_id)
         if meta is None:
             raise ImageNotFoundError(image_id)
+
+        if meta.user_id and user_id and meta.user_id != user_id:
+            from app.core.errors import ForbiddenError
+            raise ForbiddenError("You do not own this image.")
+
+        effective_user_id = user_id or meta.user_id
 
         image_sub_doc: Dict[str, Any] = {
             "image_id": meta.image_id,
@@ -75,7 +84,7 @@ class AnalysisService:
         if quality.status != "passed":
             doc = analysis_repository.create(
                 {
-                    "user_id": None,
+                    "user_id": effective_user_id,
                     "status": "quality_failed",
                     "image": image_sub_doc,
                     "quality": quality_sub_doc,
@@ -116,7 +125,7 @@ class AnalysisService:
         # ── 6. Persist ────────────────────────────────────────────────────
         doc = analysis_repository.create(
             {
-                "user_id": None,
+                "user_id": effective_user_id,
                 "status": result.status,
                 "image": image_sub_doc,
                 "quality": quality_sub_doc,
@@ -134,6 +143,7 @@ def _format_response(doc: Dict[str, Any]) -> Dict[str, Any]:
     """Reshape the raw MongoDB document for the API response layer."""
     return {
         "analysis_id": doc["id"],
+        "user_id": doc.get("user_id"),
         "status": doc["status"],
         "image": doc["image"],
         "quality": doc.get("quality"),
@@ -143,6 +153,7 @@ def _format_response(doc: Dict[str, Any]) -> Dict[str, Any]:
         "created_at": doc["created_at"],
         "updated_at": doc["updated_at"],
     }
+
 
 
 # Module-level singleton.

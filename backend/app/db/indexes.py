@@ -24,4 +24,10 @@ def create_indexes(db: Database) -> None:
         [("created_at", DESCENDING)], name="analyses_created_at_desc"
     )
 
+    # Index supporting per-user history queries.
+    analyses.create_index(
+        [("user_id", ASCENDING), ("created_at", DESCENDING)], name="analyses_user_id_created_at"
+    )
+
+
     logger.info("MongoDB indexes verified.")

@@ -1,23 +1,22 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import Icon from '@/components/ui/Icon';
-import { dashboardMockData } from '@/lib/mock/dashboard';
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import Icon from "@/components/ui/Icon";
+import { dashboardMockData } from "@/lib/mock/dashboard";
 
-export default function RecentAnalyses() {
-  const { recentAnalyses } = dashboardMockData;
-  const [selectedCrop, setSelectedCrop] = useState('All');
-  const [selectedStatus, setSelectedStatus] = useState('All');
+export default function RecentAnalyses({ data }) {
+  const recentAnalyses = data || dashboardMockData.recentAnalyses;
+  const [selectedCrop, setSelectedCrop] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("All");
 
-  // Filter items based on selected pill filters
-  const filteredItems = recentAnalyses.items.filter((item) => {
-    const matchesCrop = selectedCrop === 'All' || item.crop === selectedCrop;
+  const filteredItems = (recentAnalyses.items || []).filter((item) => {
+    const matchesCrop = selectedCrop === "All" || item.crop === selectedCrop;
     const matchesStatus =
-      selectedStatus === 'All' ||
-      (selectedStatus === 'Healthy' && item.isHealthy) ||
-      (selectedStatus === 'Potential disease' && !item.isHealthy);
+      selectedStatus === "All" ||
+      (selectedStatus === "Healthy" && item.isHealthy) ||
+      (selectedStatus === "Potential disease" && !item.isHealthy);
     return matchesCrop && matchesStatus;
   });
 
@@ -28,10 +27,10 @@ export default function RecentAnalyses() {
         {/* Left: Title & Count */}
         <div className="flex items-center gap-2">
           <h3 className="font-body text-[14px] font-semibold text-text">
-            {recentAnalyses.title}
+            {recentAnalyses.title || "Recent Analyses"}
           </h3>
           <span className="font-body text-[12px] text-text-muted">
-            Latest {recentAnalyses.displayedCount} of {recentAnalyses.totalCount}
+            Latest {filteredItems.length} of {recentAnalyses.totalCount || 0}
           </span>
         </div>
 
@@ -40,15 +39,15 @@ export default function RecentAnalyses() {
           {/* Crop Filter */}
           <div className="flex items-center gap-1">
             <span className="text-text-muted mr-1">Crop:</span>
-            {['All', 'Tomato', 'Potato'].map((crop) => (
+            {["All", "Tomato", "Potato"].map((crop) => (
               <button
                 key={crop}
                 type="button"
                 onClick={() => setSelectedCrop(crop)}
                 className={`px-2 py-0.5 rounded transition-colors ${
                   selectedCrop === crop
-                    ? 'bg-text text-white font-medium'
-                    : 'text-text-muted hover:text-text bg-surface-low'
+                    ? "bg-text text-white font-medium"
+                    : "text-text-muted hover:text-text bg-surface-low"
                 } focus-visible:outline-2 focus-visible:outline-primary`}
               >
                 {crop}
@@ -61,15 +60,15 @@ export default function RecentAnalyses() {
           {/* Status Filter */}
           <div className="flex items-center gap-1">
             <span className="text-text-muted mr-1">Status:</span>
-            {['All', 'Healthy', 'Potential disease'].map((status) => (
+            {["All", "Healthy", "Potential disease"].map((status) => (
               <button
                 key={status}
                 type="button"
                 onClick={() => setSelectedStatus(status)}
                 className={`px-2 py-0.5 rounded transition-colors ${
                   selectedStatus === status
-                    ? 'bg-text text-white font-medium'
-                    : 'text-text-muted hover:text-text bg-surface-low'
+                    ? "bg-text text-white font-medium"
+                    : "text-text-muted hover:text-text bg-surface-low"
                 } focus-visible:outline-2 focus-visible:outline-primary`}
               >
                 {status}
@@ -81,10 +80,10 @@ export default function RecentAnalyses() {
         {/* Right: View all link */}
         <div className="flex items-center">
           <Link
-            href={recentAnalyses.viewAllHref}
+            href="/app/history"
             className="text-[12px] font-medium text-text hover:text-primary transition-colors flex items-center gap-1 focus-visible:outline-2 focus-visible:outline-primary rounded"
           >
-            <span>View all ({recentAnalyses.totalCount})</span>
+            <span>View all ({recentAnalyses.totalCount || 0})</span>
             <Icon name="arrow_forward" className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -111,7 +110,7 @@ export default function RecentAnalyses() {
                 <td className="py-3 px-4">
                   <div className="w-9 h-9 rounded overflow-hidden bg-surface-high border border-border/80 shrink-0 relative">
                     <Image
-                      src={item.image}
+                      src={item.image || "/images/results/sample-healthy-leaf.jpg"}
                       alt={`${item.crop} leaf specimen preview`}
                       width={36}
                       height={36}
@@ -132,25 +131,29 @@ export default function RecentAnalyses() {
 
                 {/* Confidence */}
                 <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-text w-8 text-[12px]">
-                      {item.confidence}%
-                    </span>
-                    <div
-                      className="w-16 bg-surface-high h-1.5 rounded-full overflow-hidden shrink-0"
-                      role="progressbar"
-                      aria-valuenow={item.confidence}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                    >
+                  {item.confidence != null ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-text w-8 text-[12px]">
+                        {item.confidence}%
+                      </span>
                       <div
-                        className={`h-full rounded-full ${
-                          item.isHealthy ? 'bg-success' : 'bg-error'
-                        }`}
-                        style={{ width: `${item.confidence}%` }}
-                      />
+                        className="w-16 bg-surface-high h-1.5 rounded-full overflow-hidden shrink-0"
+                        role="progressbar"
+                        aria-valuenow={item.confidence}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <div
+                          className={`h-full rounded-full ${
+                            item.isHealthy ? "bg-success" : "bg-error"
+                          }`}
+                          style={{ width: `${item.confidence}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <span className="text-text-muted">—</span>
+                  )}
                 </td>
 
                 {/* Date */}
@@ -163,13 +166,13 @@ export default function RecentAnalyses() {
                   <span
                     className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium ${
                       item.isHealthy
-                        ? 'bg-success/10 text-success'
-                        : 'bg-error/10 text-error'
+                        ? "bg-success/10 text-success"
+                        : "bg-error/10 text-error"
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        item.isHealthy ? 'bg-success' : 'bg-error'
+                        item.isHealthy ? "bg-success" : "bg-error"
                       }`}
                       aria-hidden="true"
                     />
@@ -202,7 +205,7 @@ export default function RecentAnalyses() {
 
       {/* Footer info */}
       <div className="py-3 px-4 bg-surface-low/30 border-t border-border/60 text-[11px] text-text-muted">
-        Showing {filteredItems.length} of {recentAnalyses.totalCount} recent analyses.
+        Showing {filteredItems.length} of {recentAnalyses.totalCount || 0} recent analyses.
       </div>
     </section>
   );

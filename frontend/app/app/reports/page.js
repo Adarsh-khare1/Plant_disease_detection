@@ -1,8 +1,58 @@
-import Link from 'next/link';
-import { mockReportsData } from '@/lib/mock/reports';
+"use client";
+
+import { useEffect, useState } from "react";
+import { listAnalyses } from "@/lib/api/analyses";
+import { mockReportsData } from "@/lib/mock/reports";
 
 export default function ReportsPage() {
-  const { summary, cropDistribution, conditionBreakdown, recentSummaries } = mockReportsData;
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    async function loadReportsData() {
+      try {
+        const res = await listAnalyses({ skip: 0, limit: 100 });
+        const items = res.items || [];
+        const total = res.total || 0;
+
+        const healthyCount = items.filter((i) => i.status === "healthy").length;
+        const diseaseCount = items.filter((i) => i.status === "disease_detected").length;
+        const nonLeafCount = items.filter((i) => i.status === "not_leaf" || i.status === "unsupported_crop").length;
+
+        const tomatoCount = items.filter((i) => i.crop_check?.label === "tomato").length;
+        const potatoCount = items.filter((i) => i.crop_check?.label === "potato").length;
+        const otherCount = total - (tomatoCount + potatoCount);
+
+        const calcPct = (cnt) => (total > 0 ? Math.round((cnt / total) * 100) : 0);
+
+        setData({
+          summary: {
+            totalAnalyses: total,
+            healthyCount,
+            diseaseDetectedCount: diseaseCount,
+            nonLeafOrUnsupportedCount: nonLeafCount,
+          },
+          cropDistribution: [
+            { name: "Tomato", count: tomatoCount, percentage: calcPct(tomatoCount), color: "bg-emerald-800" },
+            { name: "Potato", count: potatoCount, percentage: calcPct(potatoCount), color: "bg-amber-700" },
+            { name: "Other / Unclassified", count: otherCount, percentage: calcPct(otherCount), color: "bg-stone-400" },
+          ],
+          conditionBreakdown: [
+            { name: "Healthy", count: healthyCount, percentage: calcPct(healthyCount), status: "healthy" },
+            { name: "Disease Detected", count: diseaseCount, percentage: calcPct(diseaseCount), status: "disease" },
+            { name: "Non-leaf / Stopped", count: nonLeafCount, percentage: calcPct(nonLeafCount), status: "other" },
+          ],
+        });
+      } catch (err) {
+        console.warn("Failed to load reports live data:", err);
+      }
+    }
+    loadReportsData();
+  }, []);
+
+  const summary = data?.summary || mockReportsData.summary;
+  const cropDistribution = data?.cropDistribution || mockReportsData.cropDistribution;
+  const conditionBreakdown = data?.conditionBreakdown || mockReportsData.conditionBreakdown;
+  const recentSummaries = mockReportsData.recentSummaries;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -78,11 +128,11 @@ export default function ReportsPage() {
                 <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${
-                      item.status === 'healthy'
-                        ? 'bg-emerald-600'
-                        : item.status === 'disease'
-                        ? 'bg-amber-600'
-                        : 'bg-stone-400'
+                      item.status === "healthy"
+                        ? "bg-emerald-600"
+                        : item.status === "disease"
+                        ? "bg-amber-600"
+                        : "bg-stone-400"
                     }`}
                     style={{ width: `${item.percentage}%` }}
                   />
@@ -128,14 +178,14 @@ export default function ReportsPage() {
         <div className="space-y-1">
           <p className="text-xs font-semibold text-amber-900">PDF & Data Export Notice</p>
           <p className="text-xs text-amber-800/90 leading-relaxed">
-            Downloadable PDF field reports and CSV data exports require backend integration and will be available once the FastAPI reporting service is online.
+            Downloadable PDF field reports and CSV data exports require additional reporting services and will be enabled in a future release.
           </p>
           <div className="pt-2">
             <button
               disabled
               className="px-3 py-1.5 bg-stone-200 text-stone-500 rounded text-xs font-medium cursor-not-allowed border border-stone-300"
             >
-              Export PDF Report (Backend Required)
+              Export PDF Report (Coming Soon)
             </button>
           </div>
         </div>

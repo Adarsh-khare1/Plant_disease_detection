@@ -2,11 +2,16 @@
 
 from tests.conftest import client, make_jpeg_bytes, make_png_bytes, make_webp_bytes  # noqa: F401
 
+_AUTH_HEADER = {"Authorization": "Bearer test_token_user_images"}
 
-def _upload(client, file_bytes: bytes, filename: str = "leaf.jpg", content_type: str = "image/jpeg"):
+
+def _upload(client, file_bytes: bytes, filename: str = "leaf.jpg", content_type: str = "image/jpeg", headers=None):
+    if headers is None:
+        headers = _AUTH_HEADER
     return client.post(
         "/api/v1/images",
         files={"image": (filename, file_bytes, content_type)},
+        headers=headers,
     )
 
 
@@ -42,6 +47,20 @@ def test_upload_returns_unique_ids(client):
     assert id1 != id2
 
 
+# ── Auth failures ─────────────────────────────────────────────────────────────
+
+def test_upload_unauthenticated_fails(client):
+    resp = _upload(client, make_jpeg_bytes(), headers={})
+    assert resp.status_code == 401
+    assert resp.json()["error"]["code"] == "unauthorized"
+
+
+def test_upload_invalid_token_fails(client):
+    resp = _upload(client, make_jpeg_bytes(), headers={"Authorization": "Bearer invalid_token"})
+    assert resp.status_code == 401
+    assert resp.json()["error"]["code"] == "unauthorized"
+
+
 # ── Validation failures ───────────────────────────────────────────────────────
 
 def test_upload_empty_file_rejected(client):
@@ -58,7 +77,6 @@ def test_upload_corrupted_file_rejected(client):
 
 
 def test_upload_unsupported_format_rejected(client):
-    # Build a valid GIF bytes.
     import io
     from PIL import Image
 
@@ -70,7 +88,6 @@ def test_upload_unsupported_format_rejected(client):
 
 
 def test_upload_oversized_file_rejected(client):
-    # 11 MB of null bytes (exceeds 10 MB limit).
     big_bytes = b"\x00" * (11 * 1024 * 1024)
     resp = _upload(client, big_bytes, "big.jpg", "image/jpeg")
     assert resp.status_code == 413

@@ -22,9 +22,12 @@ os.environ.setdefault("MONGODB_DATABASE", "plantdx_test")
 _tmp_dir = tempfile.mkdtemp(prefix="plantdx_test_uploads_")
 os.environ.setdefault("LOCAL_STORAGE_ROOT", _tmp_dir)
 
-from app.main import app  # noqa: E402  (must come after env setup)
+from app.main import app  # noqa: E402
 from app.db.client import is_connected, get_database  # noqa: E402
 from app.services import image_registry  # noqa: E402
+from app.core.auth import AuthUser  # noqa: E402
+import app.core.auth as auth_module  # noqa: E402
+from app.core.errors import UnauthorizedError  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -32,6 +35,23 @@ def client():
     """Return a TestClient that uses the full ASGI app (includes lifespan)."""
     with TestClient(app, raise_server_exceptions=True) as c:
         yield c
+
+
+@pytest.fixture(autouse=True)
+def mock_firebase_auth_for_tests(monkeypatch):
+    """Monkeypatch verify_id_token in pytest runner ONLY.
+
+    This ensures test suite runner can authenticate synthetic test tokens
+    (e.g. Bearer test_token_<uid>) while keeping runtime code strictly
+    dependent on live Firebase Admin SDK token verification.
+    """
+    def _test_verify_id_token(token: str) -> AuthUser:
+        if token.startswith("test_token_"):
+            uid = token.replace("test_token_", "")
+            return AuthUser(uid=uid, email=f"{uid}@example.com")
+        raise UnauthorizedError("Invalid authentication token.")
+
+    monkeypatch.setattr(auth_module, "verify_id_token", _test_verify_id_token)
 
 
 @pytest.fixture(autouse=True)
